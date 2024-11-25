@@ -121,7 +121,7 @@ export default async function AuthButton() {
             icon={<BadgeCheck className="size-4" />}
             className="hover:bg-accent/80"
           >
-            <Link href="/account" className="w-full">
+            <Link href="/dashboard/profile/settings" className="w-full">
               Account
             </Link>
           </MenuItem>
@@ -138,7 +138,7 @@ export default async function AuthButton() {
               icon={<Shield className="size-4" />}
               className="hover:bg-accent/80"
             >
-              <Link href="/admin" className="w-full">
+              <Link href="/dashboard/admin" className="w-full">
                 Admin Panel
               </Link>
             </MenuItem>
@@ -147,8 +147,11 @@ export default async function AuthButton() {
             icon={<Bell className="size-4" />}
             className="hover:bg-accent/80"
           >
-            <Link href="/notifications" className="w-full">
-              Notifications
+            <Link
+              href="/dashboard/communication/announcements"
+              className="w-full"
+            >
+              Announcements
             </Link>
           </MenuItem>
         </DropdownMenuGroup>
