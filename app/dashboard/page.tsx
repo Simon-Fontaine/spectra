@@ -1,25 +1,13 @@
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { requireProfile } from "@/utils/profile";
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return redirect("/sign-in");
-  }
+  const profile = await requireProfile();
 
   return (
-    <>
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-      </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-    </>
+    <div>
+      <h1>Welcome, {profile.username}!</h1>
+      <div>Role: {profile.ow_role}</div>
+      {profile.is_substitute && <div>Substitute Player</div>}
+    </div>
   );
 }
