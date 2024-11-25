@@ -85,7 +85,18 @@ export default async function AuthButton() {
   }
 
   const profile = await getProfile();
-  if (!profile) return null;
+
+  if (!profile)
+    return (
+      <Button
+        asChild
+        size="sm"
+        variant="outline"
+        className="hover:bg-accent/80 transition-colors"
+      >
+        <Link href="/onboarding">Complete Onboarding</Link>
+      </Button>
+    );
 
   return (
     <DropdownMenu>
