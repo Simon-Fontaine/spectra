@@ -5,6 +5,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -51,6 +53,8 @@ export default function RootLayout({
           <div className="relative flex min-h-screen flex-col bg-background">
             {children}
           </div>
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
