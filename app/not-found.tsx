@@ -35,7 +35,7 @@ export default function NotFoundPage() {
       >
         {/* 404 Number */}
         <motion.h1
-          className="text-[8rem] md:text-[10rem] font-extrabold leading-none bg-clip-text text-transparent bg-gradient-to-b from-foreground/80 to-foreground/20"
+          className="text-[8rem] md:text-[10rem] font-extrabold leading-none bg-clip-text text-transparent bg-gradient-to-b from-primary/80 to-primary/20"
           variants={itemVariants}
         >
           404
