@@ -146,11 +146,8 @@ export function UserMenu({
             icon={<Bell className="size-4" />}
             className="hover:bg-accent/80"
           >
-            <Link
-              href="/dashboard/communication/announcements"
-              className="w-full"
-            >
-              Announcements
+            <Link href="/dashboard/profile/notifications" className="w-full">
+              Notifications
             </Link>
           </MenuItem>
         </DropdownMenuGroup>

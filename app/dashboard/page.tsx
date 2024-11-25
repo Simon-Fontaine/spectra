@@ -1,13 +1,21 @@
 import { requireProfile } from "@/utils/profile";
+import {
+  PageHeaderDescription,
+  PageHeaderHeading,
+} from "@/components/page-header";
 
 export default async function DashboardPage() {
   const profile = await requireProfile();
 
   return (
-    <div>
-      <h1>Welcome, {profile.username}!</h1>
-      <div>Role: {profile.ow_role}</div>
-      {profile.is_substitute && <div>Substitute Player</div>}
+    <div className="flex flex-1 flex-col gap-4 p-4">
+      <div>
+        <PageHeaderHeading>Welcome, {profile.username}!</PageHeaderHeading>
+        <PageHeaderDescription>
+          What would you like to do today?
+        </PageHeaderDescription>
+      </div>
+      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
     </div>
   );
 }

@@ -1,14 +1,11 @@
-// config/dashboard.ts
 import {
   Users2,
   Trophy,
   CalendarDays,
   UserCog,
-  ScrollText,
   Swords,
   MessagesSquare,
   Shield,
-  Bell,
   HelpCircle,
   Settings,
   type LucideIcon,
@@ -48,35 +45,9 @@ export function getDashboardConfig(profile: Profile): NavConfig {
             title: "Substitutes",
             url: "/dashboard/team/substitutes",
           },
-          ...(isAdmin
-            ? [
-                {
-                  title: "Invite Player",
-                  url: "/dashboard/team/invite",
-                },
-              ]
-            : []),
         ],
       },
-      {
-        title: "Tournaments",
-        url: "/dashboard/tournaments",
-        icon: Trophy,
-        items: [
-          {
-            title: "Upcoming",
-            url: "/dashboard/tournaments/upcoming",
-          },
-          {
-            title: "Past",
-            url: "/dashboard/tournaments/past",
-          },
-          {
-            title: "Results",
-            url: "/dashboard/tournaments/results",
-          },
-        ],
-      },
+
       {
         title: "Schedule",
         url: "/dashboard/schedule",
@@ -96,40 +67,7 @@ export function getDashboardConfig(profile: Profile): NavConfig {
           },
         ],
       },
-      {
-        title: "Strategy",
-        url: "/dashboard/strategy",
-        icon: Swords,
-        items: [
-          {
-            title: "Team Comps",
-            url: "/dashboard/strategy/comps",
-          },
-          {
-            title: "Map Guides",
-            url: "/dashboard/strategy/maps",
-          },
-          {
-            title: "VOD Reviews",
-            url: "/dashboard/strategy/vods",
-          },
-        ],
-      },
-      {
-        title: "Communication",
-        url: "/dashboard/communication",
-        icon: MessagesSquare,
-        items: [
-          {
-            title: "Announcements",
-            url: "/dashboard/communication/announcements",
-          },
-          {
-            title: "Team Chat",
-            url: "/dashboard/communication/chat",
-          },
-        ],
-      },
+
       ...(isAdmin
         ? [
             {
@@ -175,16 +113,10 @@ export function getDashboardConfig(profile: Profile): NavConfig {
         url: "/dashboard/help",
         icon: HelpCircle,
       },
-      {
-        title: "Settings",
-        url: "/dashboard/settings",
-        icon: Settings,
-      },
     ],
   };
 }
 
-// Helper type for active state tracking
 export interface ActiveNavState {
   main?: string;
   sub?: string;

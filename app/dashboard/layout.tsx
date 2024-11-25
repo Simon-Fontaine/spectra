@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -20,8 +21,11 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
+
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar profile={profile} user={user} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
