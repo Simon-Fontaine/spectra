@@ -17,13 +17,13 @@ export function SiteHeader() {
           <nav className="flex items-center gap-0.5">
             {socialsConfig.map((social, index) =>
               social.url && !social.disabled ? (
-                <Button variant="ghost" size="icon" className="h-8 w-8 px-0">
-                  <Link
-                    key={index}
-                    href={social.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  key={index}
+                  className="h-8 w-8 px-0"
+                >
+                  <Link href={social.url} target="_blank" rel="noreferrer">
                     {social.icon ? (
                       <social.icon className="h-4 w-4" />
                     ) : (

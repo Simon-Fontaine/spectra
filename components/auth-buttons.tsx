@@ -8,6 +8,7 @@ import {
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,35 +21,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-
-interface UserProfile {
-  name: string;
-  email: string;
-  avatar: string;
-}
+import { getProfile } from "@/utils/profile";
+import type { Profile } from "@/utils/profile";
+import { User } from "@supabase/supabase-js";
 
 interface UserAvatarProps {
-  user: UserProfile;
+  profile: Profile;
   className?: string;
 }
 
-const UserAvatar = ({ user, className }: UserAvatarProps) => (
+const UserAvatar = ({ profile, className }: UserAvatarProps) => (
   <Avatar className={cn("h-8 w-8 rounded-lg", className)}>
-    <AvatarImage src={user.avatar} alt={user.name} />
+    <AvatarImage src={profile.avatar_url || ""} alt={profile.username} />
     <AvatarFallback className="rounded-lg">
-      {user.name.slice(0, 2).toUpperCase()}
+      {profile.username.slice(0, 2).toUpperCase()}
     </AvatarFallback>
   </Avatar>
 );
 
 interface UserInfoProps {
-  user: UserProfile;
+  profile: Profile;
+  user: User;
   className?: string;
 }
 
-const UserInfo = ({ user, className }: UserInfoProps) => (
+const UserInfo = ({ profile, user, className }: UserInfoProps) => (
   <div className={cn("grid flex-1 text-left text-sm leading-tight", className)}>
-    <span className="truncate font-semibold">{user.name}</span>
+    <span className="truncate font-semibold">{profile.username}</span>
     <span className="truncate text-xs text-muted-foreground">{user.email}</span>
   </div>
 );
@@ -72,12 +71,6 @@ export default async function AuthButton() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const userProfile: UserProfile = {
-    name: "spectra",
-    email: "m@example.com",
-    avatar: "/images/default.png",
-  };
-
   if (!user) {
     return (
       <Button
@@ -91,6 +84,9 @@ export default async function AuthButton() {
     );
   }
 
+  const profile = await getProfile();
+  if (!profile) return null;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -99,8 +95,8 @@ export default async function AuthButton() {
           variant="ghost"
           className="group relative h-auto gap-2 px-2 py-2 hover:bg-accent/80 data-[state=open]:bg-accent"
         >
-          <UserAvatar user={userProfile} />
-          <UserInfo user={userProfile} />
+          <UserAvatar profile={profile} />
+          <UserInfo profile={profile} user={user} />
           <ChevronsUpDown className="ml-auto size-4 transition-transform group-data-[state=open]:rotate-180" />
         </Button>
       </DropdownMenuTrigger>
@@ -113,8 +109,8 @@ export default async function AuthButton() {
       >
         <DropdownMenuLabel className="p-0">
           <div className="flex items-center gap-2 p-2">
-            <UserAvatar user={userProfile} />
-            <UserInfo user={userProfile} />
+            <UserAvatar profile={profile} />
+            <UserInfo profile={profile} user={user} />
           </div>
         </DropdownMenuLabel>
 
@@ -137,6 +133,16 @@ export default async function AuthButton() {
               Dashboard
             </Link>
           </MenuItem>
+          {profile.app_role === "admin" && (
+            <MenuItem
+              icon={<Shield className="size-4" />}
+              className="hover:bg-accent/80"
+            >
+              <Link href="/admin" className="w-full">
+                Admin Panel
+              </Link>
+            </MenuItem>
+          )}
           <MenuItem
             icon={<Bell className="size-4" />}
             className="hover:bg-accent/80"
