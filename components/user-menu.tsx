@@ -85,13 +85,13 @@ export function UserMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          size={isSidebar ? "lg" : "default"}
+          size="lg"
           variant="ghost"
           className={cn(
             "group relative gap-2",
             isSidebar
               ? "h-auto px-2 py-2 w-full justify-start hover:bg-sidebar-accent data-[state=open]:bg-sidebar-accent"
-              : "hover:bg-accent/80"
+              : "hover:bg-accent/80 px-2 py-2"
           )}
         >
           <UserAvatar profile={profile} />
