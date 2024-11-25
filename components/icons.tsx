@@ -11,11 +11,11 @@ import {
   LineChart,
   Loader2,
   Moon,
-  PanelLeft,
   Settings,
   ShieldHalf,
   Sun,
   Swords,
+  AlertCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,6 +30,7 @@ interface LogoProps {
 
 interface IconsType {
   home: LucideIcon;
+  alertCircle: LucideIcon;
   chevronRight: LucideIcon;
   chevronLeft: LucideIcon;
   arrowRight: LucideIcon;
@@ -54,6 +55,7 @@ interface IconsType {
 export const Icons: IconsType = {
   // Lucide icons
   home: Home,
+  alertCircle: AlertCircle,
   chevronRight: ChevronRight,
   chevronLeft: ChevronLeft,
   arrowRight: ArrowRight,
