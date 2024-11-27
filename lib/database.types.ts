@@ -9,6 +9,163 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      availability: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          is_available: boolean
+          player_id: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          is_available?: boolean
+          player_id: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_available?: boolean
+          player_id?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          end_time: string
+          event_type: Database["public"]["Enums"]["event_type"]
+          id: string
+          location: string | null
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_time: string
+          event_type: Database["public"]["Enums"]["event_type"]
+          id?: string
+          location?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_time?: string
+          event_type?: Database["public"]["Enums"]["event_type"]
+          id?: string
+          location?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      event_participants: {
+        Row: {
+          event_id: string
+          is_confirmed: boolean
+          player_id: string
+          role: Database["public"]["Enums"]["ow_role"]
+        }
+        Insert: {
+          event_id: string
+          is_confirmed?: boolean
+          player_id: string
+          role: Database["public"]["Enums"]["ow_role"]
+        }
+        Update: {
+          event_id?: string
+          is_confirmed?: boolean
+          player_id?: string
+          role?: Database["public"]["Enums"]["ow_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_participants_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          is_read: boolean
+          message: string
+          recipient_id: string
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message: string
+          recipient_id: string
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          recipient_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile: {
         Row: {
           app_role: Database["public"]["Enums"]["app_role"]
@@ -50,6 +207,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_event_conflicts: {
+        Args: {
+          p_start_time: string
+          p_end_time: string
+          p_exclude_id?: string
+        }
+        Returns: boolean
+      }
+      create_notification: {
+        Args: {
+          p_recipient_id: string
+          p_type: Database["public"]["Enums"]["notification_type"]
+          p_title: string
+          p_message: string
+          p_data?: Json
+        }
+        Returns: undefined
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -74,6 +249,13 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
+      event_type: "practice" | "tournament" | "scrim"
+      notification_type:
+        | "event_invitation"
+        | "event_update"
+        | "event_reminder"
+        | "availability_request"
+        | "admin_message"
       ow_role:
         | "off_tank"
         | "main_tank"

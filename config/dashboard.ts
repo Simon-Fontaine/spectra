@@ -38,6 +38,10 @@ export function getDashboardConfig(profile: Profile): NavConfig {
         icon: Users2,
         items: [
           {
+            title: "Replays",
+            url: "/dashboard/team/replays",
+          },
+          {
             title: "Roster",
             url: "/dashboard/team/roster",
           },

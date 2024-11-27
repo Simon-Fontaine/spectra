@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -53,6 +54,7 @@ export default function RootLayout({
           <div className="relative flex min-h-screen flex-col bg-background">
             {children}
           </div>
+          <Toaster />
           <Analytics />
           <SpeedInsights />
         </ThemeProvider>
