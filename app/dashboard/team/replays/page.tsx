@@ -148,7 +148,7 @@ export default function DashboardTeamReplaysPage() {
         </Alert>
       )}
 
-      {matches.length > 0 && (
+      {matches.length > 0 ? (
         <div className="mt-12">
           <h2 className="text-2xl font-semibold mb-6">
             Detected Matches ({matches.length})
@@ -197,6 +197,14 @@ export default function DashboardTeamReplaysPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      ) : (
+        <div>
+          <h2 className="text-2xl font-semibold mt-12">Detected Matches</h2>
+          <div className="mt-4 p-4 bg-primary/5 rounded-lg text-primary dark:text-primary/80">
+            No matches detected yet. Upload a screenshot to extract replay
+            codes.
           </div>
         </div>
       )}
