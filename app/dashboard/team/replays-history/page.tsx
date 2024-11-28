@@ -61,27 +61,72 @@ interface EditDialogProps {
   onSave: (updatedReplay: Partial<ReplayCode>) => Promise<void>;
 }
 
-function groupReplaysByDate(replays: ReplayCode[]) {
-  const groups = replays.reduce(
-    (acc, replay) => {
-      const date = new Date(replay.created_at).toLocaleDateString("en-US", {
+function groupReplaysByDateAndTime(replays: ReplayCode[]) {
+  // Map replays to include Date objects
+  const replayData = replays.map((replay) => {
+    const fullDate = new Date(replay.created_at);
+    return {
+      dateKey: fullDate.toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
-      });
-
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(replay);
-      return acc;
-    },
-    {} as Record<string, ReplayCode[]>
-  );
-
-  return Object.entries(groups).sort((a, b) => {
-    return new Date(b[0]).getTime() - new Date(a[0]).getTime();
+      }),
+      timeKey: fullDate.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      timestamp: fullDate.getTime(),
+      fullDate,
+      replay,
+    };
   });
+
+  // Sort replays by timestamp descending
+  replayData.sort((a, b) => b.timestamp - a.timestamp);
+
+  // Group by date
+  const dateMap = new Map<string, typeof replayData>();
+
+  replayData.forEach(({ dateKey, ...rest }) => {
+    if (!dateMap.has(dateKey)) {
+      dateMap.set(dateKey, []);
+    }
+    dateMap.get(dateKey)!.push({ dateKey, ...rest });
+  });
+
+  // Prepare the grouped data
+  const groupedData = Array.from(dateMap.entries()).map(([date, replays]) => {
+    // Group by time
+    const timeMap = new Map<string, ReplayCode[]>();
+
+    replays.forEach(({ timeKey, replay }) => {
+      if (!timeMap.has(timeKey)) {
+        timeMap.set(timeKey, []);
+      }
+      timeMap.get(timeKey)!.push(replay);
+    });
+
+    // Sort times in descending order
+    const times = Array.from(timeMap.entries()).sort(([timeA], [timeB]) => {
+      const dateTimeA = new Date(`${date} ${timeA}`).getTime();
+      const dateTimeB = new Date(`${date} ${timeB}`).getTime();
+      return dateTimeB - dateTimeA;
+    });
+
+    return {
+      date,
+      times,
+    };
+  });
+
+  // Sort dates in descending order
+  groupedData.sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    return dateB - dateA;
+  });
+
+  return groupedData;
 }
 
 function EditDialog({
@@ -152,7 +197,9 @@ function EditDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select result" />
+                <SelectValue placeholder="Select result">
+                  {formData.result}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Victory">Victory</SelectItem>
@@ -288,6 +335,7 @@ export default function ReplayHistoryPage() {
 
   useEffect(() => {
     Promise.all([fetchMaps(), fetchReplayCodes()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCopy = async (code: string) => {
@@ -396,7 +444,7 @@ export default function ReplayHistoryPage() {
       ) : (
         <div className="flex-1 overflow-hidden rounded-lg border border-border/40 bg-background shadow">
           <div className="h-full overflow-y-auto">
-            {groupReplaysByDate(replayCodes).map(([date, replays]) => (
+            {groupReplaysByDateAndTime(replayCodes).map(({ date, times }) => (
               <div
                 key={date}
                 className="border-b border-border/40 last:border-0"
@@ -404,84 +452,89 @@ export default function ReplayHistoryPage() {
                 <div className="sticky top-0 z-10 bg-muted/80 backdrop-blur p-4 border-b border-border/40">
                   <h3 className="text-sm font-medium">{date}</h3>
                 </div>
-                <div className="divide-y divide-border/40">
-                  {replays.map((replay) => (
-                    <div
-                      key={replay.id}
-                      className="p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
-                        <div className="flex items-center gap-4 flex-col sm:flex-row">
-                          <code className="text-lg font-mono">
-                            {replay.code}
-                          </code>
-                          <div className="flex items-center gap-2">
-                            <Badge>{replay.map.name}</Badge>
-                            <Badge variant="outline">
-                              {replay.map.game_mode.name}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className={getResultColor(replay.result)}
+                {times.map(([time, replays]) => (
+                  <div key={time} className="divide-y divide-border/40">
+                    <div className="bg-muted/80 backdrop-blur p-4 border-b border-border/40">
+                      <h4 className="text-sm font-semibold">{time}</h4>
+                    </div>
+                    {replays.map((replay) => (
+                      <div
+                        key={replay.id}
+                        className="p-4 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
+                          <div className="flex items-center gap-4 flex-col sm:flex-row">
+                            <code className="text-lg font-mono">
+                              {replay.code}
+                            </code>
+                            <div className="flex items-center gap-2">
+                              <Badge>{replay.map.name}</Badge>
+                              <Badge variant="outline">
+                                {replay.map.game_mode.name}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={getResultColor(replay.result)}
+                              >
+                                {replay.result}
+                              </Badge>
+                              {replay.is_reviewed && (
+                                <Badge variant="secondary">Reviewed</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleCopy(replay.code)}
                             >
-                              {replay.result}
-                            </Badge>
-                            {replay.is_reviewed && (
-                              <Badge variant="secondary">Reviewed</Badge>
-                            )}
+                              {copiedCode === replay.code ? (
+                                <Check className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setEditingReplay(replay)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(replay.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleCopy(replay.code)}
-                          >
-                            {copiedCode === replay.code ? (
-                              <Check className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
+                        {(replay.notes || replay.uploaded_image_url) && (
+                          <div className="mt-2 flex flex-col gap-2">
+                            {replay.notes && (
+                              <p className="text-sm text-muted-foreground">
+                                {replay.notes}
+                              </p>
                             )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditingReplay(replay)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(replay.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                            {replay.uploaded_image_url && (
+                              <a
+                                href={replay.uploaded_image_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                              >
+                                View Original Screenshot
+                                <Icons.external className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {(replay.notes || replay.uploaded_image_url) && (
-                        <div className="mt-2 flex flex-col gap-2">
-                          {replay.notes && (
-                            <p className="text-sm text-muted-foreground">
-                              {replay.notes}
-                            </p>
-                          )}
-                          {replay.uploaded_image_url && (
-                            <a
-                              href={replay.uploaded_image_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                            >
-                              View Original Screenshot
-                              <Icons.external className="h-3 w-3" />
-                            </a>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ))}
               </div>
             ))}
           </div>
