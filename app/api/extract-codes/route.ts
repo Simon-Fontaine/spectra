@@ -5,6 +5,8 @@ import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
+import { getMapIdByName } from "@/utils/maps";
+import { User } from "@supabase/supabase-js";
 
 const CONFIG = {
   RATE_LIMIT_GLOBAL: 5, // requests per minute
@@ -29,7 +31,7 @@ const openai = new OpenAI({
 const ReplaySchema = z.object({
   replays: z.array(
     z.object({
-      code: z.string(),
+      code: z.string().regex(/^[A-Z0-9]{5,12}$/i),
       map: z.string(),
       result: z.enum(["Victory", "Defeat", "Draw"]),
     })
@@ -58,12 +60,11 @@ Rules:
 5. Validate all codes follow the correct format (letters and numbers)
 `;
 
-async function uploadFile(file: File): Promise<string> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+async function uploadFile(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  user: User,
+  file: File
+): Promise<string> {
   if (!user) {
     throw new Error("You must be logged in to upload files");
   }
@@ -183,7 +184,16 @@ export async function POST(request: Request) {
     }
 
     // Upload file and get URL
-    const url = await uploadFile(file);
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error("You must be logged in to upload files");
+    }
+
+    const url = await uploadFile(supabase, user, file);
 
     // Process with OpenAI
     const openAIResponse = await openai.chat.completions.create({
@@ -216,6 +226,24 @@ export async function POST(request: Request) {
     try {
       const parsedResponse = JSON.parse(responseContent);
       const validatedData = ReplaySchema.parse(parsedResponse);
+
+      const replayData = await Promise.all(
+        validatedData.replays.map(async (replay) => ({
+          code: replay.code.toUpperCase(),
+          map_id: await getMapIdByName(supabase, replay.map),
+          result: replay.result,
+          uploaded_by: user.id,
+          uploaded_image_url: url,
+        }))
+      );
+
+      const { error: insertError } = await supabase
+        .from("replay_codes")
+        .insert(replayData);
+
+      if (insertError) {
+        throw new Error("Failed to store replay codes");
+      }
 
       return NextResponse.json(validatedData);
     } catch (parseError) {

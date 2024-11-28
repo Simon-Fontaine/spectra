@@ -122,6 +122,74 @@ export type Database = {
           },
         ]
       }
+      game_modes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      maps: {
+        Row: {
+          country: string | null
+          created_at: string
+          game_mode_id: string
+          id: string
+          is_active: boolean
+          name: string
+          released_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          game_mode_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          released_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          game_mode_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          released_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maps_game_mode_id_fkey"
+            columns: ["game_mode_id"]
+            isOneToOne: false
+            referencedRelation: "game_modes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -202,11 +270,67 @@ export type Database = {
         }
         Relationships: []
       }
+      replay_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_reviewed: boolean
+          map_id: string
+          notes: string | null
+          result: Database["public"]["Enums"]["match_result"]
+          updated_at: string
+          uploaded_by: string
+          uploaded_image_url: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_reviewed?: boolean
+          map_id: string
+          notes?: string | null
+          result: Database["public"]["Enums"]["match_result"]
+          updated_at?: string
+          uploaded_by: string
+          uploaded_image_url?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_reviewed?: boolean
+          map_id?: string
+          notes?: string | null
+          result?: Database["public"]["Enums"]["match_result"]
+          updated_at?: string
+          uploaded_by?: string
+          uploaded_image_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "replay_codes_map_id_fkey"
+            columns: ["map_id"]
+            isOneToOne: false
+            referencedRelation: "maps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      add_map: {
+        Args: {
+          p_name: string
+          p_game_mode: string
+          p_country?: string
+          p_released_at?: string
+        }
+        Returns: string
+      }
       check_event_conflicts: {
         Args: {
           p_start_time: string
@@ -250,6 +374,7 @@ export type Database = {
     Enums: {
       app_role: "user" | "admin"
       event_type: "practice" | "tournament" | "scrim"
+      match_result: "Victory" | "Defeat" | "Draw"
       notification_type:
         | "event_invitation"
         | "event_update"

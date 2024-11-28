@@ -42,6 +42,10 @@ export function getDashboardConfig(profile: Profile): NavConfig {
             url: "/dashboard/team/replays",
           },
           {
+            title: "Replays History",
+            url: "/dashboard/team/replays-history",
+          },
+          {
             title: "Roster",
             url: "/dashboard/team/roster",
           },
