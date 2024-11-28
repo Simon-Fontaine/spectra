@@ -272,7 +272,10 @@ export default function ReplayHistory({
                           </div>
                           {/* Badges for Small Screens */}
                           <div className="sm:hidden flex flex-wrap items-center gap-2 mt-2">
-                            <Badge className="whitespace-nowrap">
+                            <Badge
+                              variant="outline"
+                              className="bg-purple-500/20 text-purple-700 dark:text-purple-300 whitespace-nowrap"
+                            >
                               {replay.map.name}
                             </Badge>
                             <Badge
