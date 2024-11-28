@@ -1,12 +1,21 @@
+import {
+  PageHeaderDescription,
+  PageHeaderHeading,
+} from "@/components/page-header";
+import { TestChart } from "@/components/test-chart";
+
 export default async function DashboardTeamPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
+      <div>
+        <PageHeaderHeading>Team Overview</PageHeaderHeading>
+        <PageHeaderDescription>
+          Overview of your team's performance and activity. (fake data)
+        </PageHeaderDescription>
       </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+      <div className="flex-1 overflow-hidden rounded-lg border shadow bg-muted/80 backdrop-blur p-4 border-b border-border/40">
+        <TestChart />
+      </div>
     </div>
   );
 }
