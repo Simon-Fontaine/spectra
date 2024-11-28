@@ -11,6 +11,7 @@ import { Icons } from "@/components/icons";
 import ReplayEditDialog from "@/components/replay-edit-dialog";
 import { Profile } from "@/utils/profile";
 import { cn } from "@/lib/utils";
+import DeleteReplayButton from "./replay-delete-button";
 
 interface GameMode {
   name: string;
@@ -156,34 +157,6 @@ export default function ReplayHistory({
     }
   };
 
-  const handleDelete = async (replayId: string) => {
-    if (!confirm("Are you sure you want to delete this replay code?")) return;
-
-    try {
-      const { error } = await supabase
-        .from("replay_codes")
-        .delete()
-        .eq("id", replayId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Replay code deleted successfully",
-      });
-
-      // Refresh the page to get the updated data
-      router.refresh();
-    } catch (error) {
-      console.error("Error deleting replay code:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete replay code",
-        variant: "destructive",
-      });
-    }
-  };
-
   const getResultColor = (result: ReplayCode["result"]) => {
     switch (result) {
       case "Victory":
@@ -229,27 +202,102 @@ export default function ReplayHistory({
                         className="p-4 hover:bg-muted/50 transition-colors"
                       >
                         <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
-                          <div className="flex items-center gap-4 flex-col sm:flex-row">
+                          {/* Left Section */}
+                          <div className="flex items-center gap-4">
                             <code className="text-lg font-mono">
                               {replay.code}
                             </code>
-                            <div className="flex items-center gap-2">
-                              <Badge>{replay.map.name}</Badge>
-                              <Badge variant="outline">
+                            {/* Badges for Large Screens */}
+                            <div className="hidden sm:flex flex-wrap items-center gap-2">
+                              <Badge className="whitespace-nowrap">
+                                {replay.map.name}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className="whitespace-nowrap"
+                              >
                                 {replay.map.game_mode.name}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className={getResultColor(replay.result)}
+                                className={cn(
+                                  getResultColor(replay.result),
+                                  "whitespace-nowrap"
+                                )}
                               >
                                 {replay.result}
                               </Badge>
                               {replay.is_reviewed && (
-                                <Badge variant="secondary">Reviewed</Badge>
+                                <Badge
+                                  variant="secondary"
+                                  className="whitespace-nowrap"
+                                >
+                                  Reviewed
+                                </Badge>
+                              )}
+                            </div>
+                            {/* Buttons for Small Screens */}
+                            <div className="sm:hidden flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleCopy(replay.code)}
+                              >
+                                {copiedCode === replay.code ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                              {(profile.app_role === "admin" ||
+                                profile.id === replay.uploaded_by) && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setEditingReplay(replay)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <DeleteReplayButton
+                                    replayId={replay.id}
+                                    showButton={profile.app_role === "admin"}
+                                  />
+                                </>
                               )}
                             </div>
                           </div>
-                          <div className="flex gap-1">
+                          {/* Badges for Small Screens */}
+                          <div className="sm:hidden flex flex-wrap items-center gap-2 mt-2">
+                            <Badge className="whitespace-nowrap">
+                              {replay.map.name}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="whitespace-nowrap"
+                            >
+                              {replay.map.game_mode.name}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                getResultColor(replay.result),
+                                "whitespace-nowrap"
+                              )}
+                            >
+                              {replay.result}
+                            </Badge>
+                            {replay.is_reviewed && (
+                              <Badge
+                                variant="secondary"
+                                className="whitespace-nowrap"
+                              >
+                                Reviewed
+                              </Badge>
+                            )}
+                          </div>
+                          {/* Buttons for Large Screens */}
+                          <div className="hidden sm:flex gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -261,31 +309,25 @@ export default function ReplayHistory({
                                 <Copy className="h-4 w-4" />
                               )}
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className={cn(
-                                profile.app_role === "admin" ||
-                                  profile.id === replay.uploaded_by
-                                  ? ""
-                                  : "hidden"
-                              )}
-                              onClick={() => setEditingReplay(replay)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className={cn(
-                                profile.app_role === "admin" ? "" : "hidden"
-                              )}
-                              onClick={() => handleDelete(replay.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {(profile.app_role === "admin" ||
+                              profile.id === replay.uploaded_by) && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingReplay(replay)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <DeleteReplayButton
+                                  replayId={replay.id}
+                                  showButton={profile.app_role === "admin"}
+                                />
+                              </>
+                            )}
                           </div>
                         </div>
+                        {/* Notes and Uploaded Image */}
                         {(replay.notes || replay.uploaded_image_url) && (
                           <div className="mt-2 flex flex-col gap-2">
                             {replay.notes && (
