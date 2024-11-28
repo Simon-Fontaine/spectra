@@ -63,12 +63,20 @@ export default async function OnboardingPage(props: {
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <PasswordInput name="password" required />
+            <PasswordInput
+              name="password"
+              placeholder="Create your new password"
+              required
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <PasswordInput name="confirmPassword" required />
+            <PasswordInput
+              name="confirmPassword"
+              placeholder="Confirm your new password"
+              required
+            />
           </div>
 
           <div className="space-y-2">

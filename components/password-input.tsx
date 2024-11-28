@@ -14,7 +14,11 @@ type Props = React.ComponentProps<"input"> & {
   name?: string;
 };
 
-export default function PasswordInput({ name, ...props }: Props) {
+export default function PasswordInput({
+  name,
+  placeholder = "••••••••",
+  ...props
+}: Props) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -23,11 +27,11 @@ export default function PasswordInput({ name, ...props }: Props) {
         <Input
           name={name}
           type={showPassword ? "text" : "password"}
-          placeholder="••••••••"
+          placeholder={placeholder}
           required
           className="pr-10"
           {...props}
-        ></Input>
+        />
         <Tooltip>
           <TooltipTrigger
             type="button"
