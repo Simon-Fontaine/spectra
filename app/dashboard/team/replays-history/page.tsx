@@ -410,8 +410,8 @@ export default function ReplayHistoryPage() {
                       key={replay.id}
                       className="p-4 hover:bg-muted/50 transition-colors"
                     >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
+                        <div className="flex items-center gap-4 flex-col sm:flex-row">
                           <code className="text-lg font-mono">
                             {replay.code}
                           </code>
