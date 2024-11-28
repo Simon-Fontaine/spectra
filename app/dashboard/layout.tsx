@@ -9,6 +9,15 @@ import {
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { requireProfile } from "@/utils/profile";
 import { createClient } from "@/utils/supabase/server";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Dashboard",
+    template: "%s - Dashboard",
+  },
+  description: "Welcome to the dashboard. What would you like to do today?",
+};
 
 export default async function DashboardLayout({
   children,

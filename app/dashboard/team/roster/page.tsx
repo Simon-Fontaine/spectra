@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Roster",
+  description: "View your team's roster.",
+};
+
 export default async function DashboardTeamRosterPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">

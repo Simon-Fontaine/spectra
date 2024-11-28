@@ -3,6 +3,12 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description: "Welcome to the dashboard. What would you like to do today?",
+};
 
 export default async function DashboardPage() {
   const profile = await requireProfile();

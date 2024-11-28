@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Substitutes",
+  description: "View your team's substitutes.",
+};
+
 export default async function DashboardTeamSubstitutesPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">

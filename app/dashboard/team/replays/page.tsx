@@ -6,8 +6,15 @@ import UploadReplayScreenshot from "@/components/upload-replay-screenshot";
 import ReplayHistory from "@/components/replay-history";
 import { createClient } from "@/utils/supabase/server";
 import { requireProfile } from "@/utils/profile";
+import { Metadata } from "next";
 
-export default async function Page() {
+export const metadata: Metadata = {
+  title: "Replays",
+  description:
+    "Upload a screenshot of your match history to extract replay codes",
+};
+
+export default async function DashboardTeamReplayPage() {
   const supabase = await createClient();
   const profile = await requireProfile();
 

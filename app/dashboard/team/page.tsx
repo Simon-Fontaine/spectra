@@ -7,6 +7,12 @@ import { TestingBarChart } from "@/components/testing-bar-chart";
 import { TestingBarChartInteractive } from "@/components/testing-bar-chart-interactive";
 import { TestingLineChart } from "@/components/testing-line-chart";
 import { TestingRadarChart } from "@/components/testing-radar-chart";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Team Overview",
+  description: "Overview of your team's performance and activity.",
+};
 
 export default async function DashboardTeamPage() {
   return (
