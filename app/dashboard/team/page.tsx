@@ -2,7 +2,11 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
-import { TestChart } from "@/components/test-chart";
+import { TestingAreaChartInteractive } from "@/components/testing-area-chart-interactive";
+import { TestingBarChart } from "@/components/testing-bar-chart";
+import { TestingBarChartInteractive } from "@/components/testing-bar-chart-interactive";
+import { TestingLineChart } from "@/components/testing-line-chart";
+import { TestingRadarChart } from "@/components/testing-radar-chart";
 
 export default async function DashboardTeamPage() {
   return (
@@ -13,8 +17,16 @@ export default async function DashboardTeamPage() {
           Overview of your team's performance and activity. (fake data)
         </PageHeaderDescription>
       </div>
-      <div className="flex-1 overflow-hidden rounded-lg border shadow bg-muted/80 backdrop-blur p-4 border-b border-border/40">
-        <TestChart />
+      <div className="grid flex-1 scroll-mt-20 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-10">
+        <TestingBarChart />
+        <TestingLineChart />
+        <TestingRadarChart />
+        <div className="md:col-span-2 lg:col-span-3">
+          <TestingAreaChartInteractive />
+        </div>
+        <div className="md:col-span-2 lg:col-span-3">
+          <TestingBarChartInteractive />
+        </div>
       </div>
     </div>
   );

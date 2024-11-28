@@ -1,33 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/utils/supabase/client";
-import { Check, Copy, Inbox, Loader2, Pencil, Trash2 } from "lucide-react";
-import {
-  PageHeaderDescription,
-  PageHeaderHeading,
-} from "@/components/page-header";
+import { Check, Copy, Inbox, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Icons } from "@/components/icons";
+import ReplayEditDialog from "@/components/replay-edit-dialog";
+import { Profile } from "@/utils/profile";
+import { cn } from "@/lib/utils";
 
 interface GameMode {
   name: string;
@@ -53,12 +36,10 @@ interface ReplayCode {
   uploaded_by: string;
 }
 
-interface EditDialogProps {
-  replay: ReplayCode;
+interface ReplayHistoryProps {
+  replays: ReplayCode[];
   maps: MapDetails[];
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSave: (updatedReplay: Partial<ReplayCode>) => Promise<void>;
+  profile: Profile;
 }
 
 function groupReplaysByDateAndTime(replays: ReplayCode[]) {
@@ -129,214 +110,16 @@ function groupReplaysByDateAndTime(replays: ReplayCode[]) {
   return groupedData;
 }
 
-function EditDialog({
-  replay,
+export default function ReplayHistory({
+  replays,
   maps,
-  open,
-  onOpenChange,
-  onSave,
-}: EditDialogProps) {
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    map_id: replay.map_id,
-    result: replay.result,
-    notes: replay.notes || "",
-    is_reviewed: replay.is_reviewed,
-  });
-
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-      await onSave(formData);
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Failed to save:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Replay Code</DialogTitle>
-          <DialogDescription>
-            Update the details for replay code {replay.code}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4 py-4">
-          <div>
-            <Select
-              value={formData.map_id}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, map_id: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select map">
-                  {maps.find((m) => m.id === formData.map_id)?.name}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {maps.map((map) => (
-                  <SelectItem key={map.id} value={map.id}>
-                    {map.name} ({map.game_mode.name})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Select
-              value={formData.result}
-              onValueChange={(value: ReplayCode["result"]) =>
-                setFormData((prev) => ({ ...prev, result: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select result">
-                  {formData.result}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Victory">Victory</SelectItem>
-                <SelectItem value="Defeat">Defeat</SelectItem>
-                <SelectItem value="Draw">Draw</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Textarea
-              placeholder="Add notes..."
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, notes: e.target.value }))
-              }
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="is_reviewed"
-              className="h-4 w-4"
-              checked={formData.is_reviewed}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  is_reviewed: e.target.checked,
-                }))
-              }
-            />
-            <label htmlFor="is_reviewed">Mark as reviewed</label>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save changes
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export default function ReplayHistoryPage() {
-  const [replayCodes, setReplayCodes] = useState<ReplayCode[]>([]);
-  const [maps, setMaps] = useState<MapDetails[]>([]);
-  const [loading, setLoading] = useState(true);
+  profile,
+}: ReplayHistoryProps) {
   const [editingReplay, setEditingReplay] = useState<ReplayCode | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
   const supabase = createClient();
-
-  const fetchMaps = async () => {
-    const { data, error } = await supabase
-      .from("maps")
-      .select(
-        `
-        id,
-        name,
-        game_mode:game_modes!game_mode_id(name)
-      `
-      )
-      .eq("is_active", true);
-
-    if (error) {
-      console.error("Error fetching maps:", error);
-      return;
-    }
-
-    // Type assertion to ensure the data matches our interface
-    const mapsWithGameModes = data.map((map) => ({
-      id: map.id,
-      name: map.name,
-      game_mode: {
-        name: (map.game_mode as any).name,
-      },
-    })) as MapDetails[];
-
-    setMaps(mapsWithGameModes);
-  };
-
-  const fetchReplayCodes = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("replay_codes")
-        .select(
-          `
-          *,
-          map:maps!map_id(
-            id,
-            name,
-            game_mode:game_modes!game_mode_id(name)
-          )
-        `
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      // Transform and type the data
-      const transformedData = data.map((replay) => ({
-        ...replay,
-        map: {
-          id: (replay.map as any).id,
-          name: (replay.map as any).name,
-          game_mode: {
-            name: (replay.map as any).game_mode.name,
-          },
-        },
-      })) as ReplayCode[];
-
-      setReplayCodes(transformedData);
-    } catch (error) {
-      console.error("Error fetching replay codes:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load replay codes",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    Promise.all([fetchMaps(), fetchReplayCodes()]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleCopy = async (code: string) => {
     await navigator.clipboard.writeText(code);
@@ -361,8 +144,8 @@ export default function ReplayHistoryPage() {
         description: "Replay code updated successfully",
       });
 
-      // Refresh the list
-      fetchReplayCodes();
+      // Refresh the page to get the updated data
+      router.refresh();
     } catch (error) {
       console.error("Error updating replay code:", error);
       toast({
@@ -389,8 +172,8 @@ export default function ReplayHistoryPage() {
         description: "Replay code deleted successfully",
       });
 
-      // Refresh the list
-      fetchReplayCodes();
+      // Refresh the page to get the updated data
+      router.refresh();
     } catch (error) {
       console.error("Error deleting replay code:", error);
       toast({
@@ -413,38 +196,21 @@ export default function ReplayHistoryPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      <div>
-        <PageHeaderHeading>Replay History</PageHeaderHeading>
-        <PageHeaderDescription>
-          View and manage your saved replay codes
-        </PageHeaderDescription>
-      </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      ) : replayCodes.length === 0 ? (
+    <div className="flex flex-col gap-4">
+      {replays.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
           <Inbox className="text-muted-foreground mb-4" />
           <p className="text-lg font-medium text-muted-foreground">
             No replay codes found
           </p>
           <p className="text-sm text-muted-foreground mt-1">
-            Go to the replay extraction page to add your first replay code
+            Upload a screenshot to add your first replay code
           </p>
-          <Button
-            className="mt-4"
-            onClick={() => router.push("/dashboard/team/replays")}
-          >
-            Extract Replay Codes
-          </Button>
         </div>
       ) : (
         <div className="flex-1 overflow-hidden rounded-lg border border-border/40 bg-background shadow">
           <div className="h-full overflow-y-auto">
-            {groupReplaysByDateAndTime(replayCodes).map(({ date, times }) => (
+            {groupReplaysByDateAndTime(replays).map(({ date, times }) => (
               <div
                 key={date}
                 className="border-b border-border/40 last:border-0"
@@ -498,6 +264,12 @@ export default function ReplayHistoryPage() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className={cn(
+                                profile.app_role === "admin" ||
+                                  profile.id === replay.uploaded_by
+                                  ? ""
+                                  : "hidden"
+                              )}
                               onClick={() => setEditingReplay(replay)}
                             >
                               <Pencil className="h-4 w-4" />
@@ -505,6 +277,9 @@ export default function ReplayHistoryPage() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className={cn(
+                                profile.app_role === "admin" ? "" : "hidden"
+                              )}
                               onClick={() => handleDelete(replay.id)}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -542,7 +317,7 @@ export default function ReplayHistoryPage() {
       )}
 
       {editingReplay && (
-        <EditDialog
+        <ReplayEditDialog
           replay={editingReplay}
           maps={maps}
           open={!!editingReplay}
