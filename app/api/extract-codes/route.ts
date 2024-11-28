@@ -3,26 +3,18 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
-import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
 import { getMapIdByName } from "@/utils/maps";
 import { User } from "@supabase/supabase-js";
 
 const CONFIG = {
-  RATE_LIMIT_GLOBAL: 5, // requests per minute
-  RATE_LIMIT_PER_IP: 3, // requests per minute
+  RATE_LIMIT_PER_USER: 1,
   MAX_FILE_SIZE_MB: 10,
   CLEANUP_INTERVAL: 60 * 60 * 1000, // 1 hour
 } as const;
 
-const rateLimiter = new RateLimiter({
-  tokensPerInterval: CONFIG.RATE_LIMIT_GLOBAL,
-  interval: "minute",
-  fireImmediately: true,
-});
-
-const ipLimiters = new Map<string, RateLimiter>();
-const ipLastAccess = new Map<string, number>();
+const userLimiters = new Map<string, RateLimiter>();
+const userLastAccess = new Map<string, number>();
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -94,30 +86,30 @@ async function uploadFile(
   return publicUrlData.publicUrl;
 }
 
-// Function to get or create a rate limiter for a specific IP
-function getIpLimiter(ip: string): RateLimiter {
-  if (!ipLimiters.has(ip)) {
-    ipLimiters.set(
-      ip,
+// Function to get or create a rate limiter for a specific user ID
+function getUserLimiter(userId: string): RateLimiter {
+  if (!userLimiters.has(userId)) {
+    userLimiters.set(
+      userId,
       new RateLimiter({
-        tokensPerInterval: CONFIG.RATE_LIMIT_PER_IP,
+        tokensPerInterval: CONFIG.RATE_LIMIT_PER_USER,
         interval: "minute",
         fireImmediately: true,
       })
     );
   }
-  ipLastAccess.set(ip, Date.now());
-  return ipLimiters.get(ip)!;
+  userLastAccess.set(userId, Date.now());
+  return userLimiters.get(userId)!;
 }
 
-// Clean up old IP limiters every hour
+// Clean up old user limiters every hour
 setInterval(() => {
   try {
     const oneHourAgo = Date.now() - CONFIG.CLEANUP_INTERVAL;
-    Array.from(ipLastAccess.entries()).forEach(([ip, lastAccess]) => {
+    Array.from(userLastAccess.entries()).forEach(([userId, lastAccess]) => {
       if (lastAccess < oneHourAgo) {
-        ipLimiters.delete(ip);
-        ipLastAccess.delete(ip);
+        userLimiters.delete(userId);
+        userLastAccess.delete(userId);
       }
     });
   } catch (error) {
@@ -127,31 +119,27 @@ setInterval(() => {
 
 export async function POST(request: Request) {
   try {
-    // Get client IP
-    const headersList = await headers();
-    const forwardedFor = headersList.get("x-forwarded-for");
-    const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "unknown";
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    // Check global rate limit
-    const globalRateLimit = await rateLimiter.removeTokens(1);
-    if (globalRateLimit < 0) {
+    if (!user) {
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": "60",
-          },
-        }
+        { error: "You must be logged in to use this service" },
+        { status: 401 }
       );
     }
 
-    // Check IP-specific rate limit
-    const ipLimiter = getIpLimiter(clientIp);
-    const ipRateLimit = await ipLimiter.removeTokens(1);
-    if (ipRateLimit < 0) {
+    // Check user-specific rate limit
+    const userLimiter = getUserLimiter(user.id);
+    const userRateLimit = await userLimiter.removeTokens(1);
+    if (userRateLimit < 0) {
       return NextResponse.json(
-        { error: "Rate limit exceeded for your IP. Please try again later." },
+        {
+          error:
+            "Rate limit exceeded for your account. Please try again later.",
+        },
         {
           status: 429,
           headers: {
@@ -183,16 +171,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Upload file and get URL
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      throw new Error("You must be logged in to upload files");
-    }
-
     const url = await uploadFile(supabase, user, file);
 
     // Process with OpenAI
@@ -200,17 +178,7 @@ export async function POST(request: Request) {
       model: "gpt-4o",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: [
-            {
-              type: "image_url",
-              image_url: {
-                url: url,
-              },
-            },
-          ],
-        },
+        { role: "user", content: [{ type: "image_url", image_url: { url } }] },
       ],
       response_format: { type: "json_object" },
       temperature: 0,
@@ -222,41 +190,32 @@ export async function POST(request: Request) {
       throw new Error("No content in OpenAI response");
     }
 
-    // Parse and validate response
-    try {
-      const parsedResponse = JSON.parse(responseContent);
-      const validatedData = ReplaySchema.parse(parsedResponse);
+    const parsedResponse = JSON.parse(responseContent);
+    const validatedData = ReplaySchema.parse(parsedResponse);
 
-      const replayData = await Promise.all(
-        validatedData.replays.map(async (replay) => ({
-          code: replay.code.toUpperCase(),
-          map_id: await getMapIdByName(supabase, replay.map),
-          result: replay.result,
-          uploaded_by: user.id,
-          uploaded_image_url: url,
-        }))
-      );
+    const replayData = await Promise.all(
+      validatedData.replays.map(async (replay) => ({
+        code: replay.code.toUpperCase(),
+        map_id: await getMapIdByName(supabase, replay.map),
+        result: replay.result,
+        uploaded_by: user.id,
+        uploaded_image_url: url,
+      }))
+    );
 
-      const { error: insertError } = await supabase
-        .from("replay_codes")
-        .insert(replayData);
+    const { error: insertError } = await supabase
+      .from("replay_codes")
+      .insert(replayData);
 
-      if (insertError) {
-        throw new Error("Failed to store replay codes");
-      }
-
-      return NextResponse.json(validatedData);
-    } catch (parseError) {
-      console.error("Response validation error:", parseError);
-      throw new Error("Invalid response format from AI");
+    if (insertError) {
+      throw new Error("Failed to store replay codes");
     }
+
+    return NextResponse.json(validatedData);
   } catch (error: any) {
     console.error("Process error:", error);
-
-    // Return appropriate error message based on error type
     const errorMessage = error.message || "Failed to process image";
     const statusCode = error.status || 500;
-
     return NextResponse.json({ error: errorMessage }, { status: statusCode });
   }
 }
