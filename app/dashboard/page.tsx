@@ -6,7 +6,7 @@ import {
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Home",
+  title: "Dashboard",
   description: "Welcome to the dashboard. What would you like to do today?",
 };
 
