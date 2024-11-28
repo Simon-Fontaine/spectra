@@ -209,7 +209,10 @@ export default function ReplayHistory({
                             </code>
                             {/* Badges for Large Screens */}
                             <div className="hidden sm:flex flex-wrap items-center gap-2">
-                              <Badge className="whitespace-nowrap">
+                              <Badge
+                                variant="outline"
+                                className="bg-purple-500/20 text-purple-700 dark:text-purple-300 whitespace-nowrap"
+                              >
                                 {replay.map.name}
                               </Badge>
                               <Badge
@@ -340,7 +343,7 @@ export default function ReplayHistory({
                                 href={replay.uploaded_image_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                                className="text-xs text-primary hover:underline inline-flex items-center gap-1 text-purple-700 dark:text-purple-300"
                               >
                                 View Original Screenshot
                                 <Icons.external className="h-3 w-3" />
