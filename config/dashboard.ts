@@ -1,13 +1,9 @@
 import {
   Users2,
-  Trophy,
   CalendarDays,
   UserCog,
-  Swords,
-  MessagesSquare,
   Shield,
   HelpCircle,
-  Settings,
   type LucideIcon,
 } from "lucide-react";
 import type { Profile } from "@/utils/profile";
@@ -44,10 +40,6 @@ export function getDashboardConfig(profile: Profile): NavConfig {
           {
             title: "Roster",
             url: "/dashboard/team/roster",
-          },
-          {
-            title: "Substitutes",
-            url: "/dashboard/team/substitutes",
           },
         ],
       },

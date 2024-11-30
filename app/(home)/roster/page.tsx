@@ -1,29 +1,45 @@
-import { Announcement } from "@/components/announcement";
+import { createClient } from "@/utils/supabase/server";
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
+import { siteConfig } from "@/config/site";
 import { Metadata } from "next";
+import { Announcement } from "@/components/announcement";
+import { TeamRoster } from "@/components/team-roster";
 
 export const metadata: Metadata = {
-  title: "Roster",
-  description: "Meet the team",
+  title: "Team Roster",
+  description: `Meet the competitive Overwatch roster of ${siteConfig.name}`,
 };
 
-export default function RosterPage() {
+export default async function RosterPage() {
+  const supabase = await createClient();
+
+  const { data: members, error } = await supabase
+    .from("profile")
+    .select("id, username, avatar_url, ow_role, is_substitute, app_role")
+    .order("username");
+
+  if (error) {
+    console.error("Error fetching team members:", error);
+    return <div>Error loading team roster</div>;
+  }
   return (
-    <>
+    <div className="relative">
       <PageHeader>
         <Announcement />
-        <PageHeaderHeading>Meet the team</PageHeaderHeading>
+        <PageHeaderHeading>Our Roster</PageHeaderHeading>
         <PageHeaderDescription>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Excepturi,
-          porro? Quis deleniti dicta placeat eaque repellat labore accusantium
-          sunt, veritatis fuga vel minima minus nesciunt ex impedit sit, libero
-          tempora.
+          Meet our competitive Overwatch team, a group of dedicated players
+          striving for excellence in every match.
         </PageHeaderDescription>
       </PageHeader>
-    </>
+
+      <div className="container py-6">
+        <TeamRoster members={members || []} />
+      </div>
+    </div>
   );
 }
