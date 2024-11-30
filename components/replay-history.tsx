@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/utils/supabase/client";
-import { Check, Copy, Inbox, Pencil, Trash2 } from "lucide-react";
+import { Check, Copy, Inbox, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import ReplayEditDialog from "@/components/replay-edit-dialog";
+import ReplayFilters from "@/components/replay-filters";
 import { Profile } from "@/utils/profile";
 import { cn } from "@/lib/utils";
 import DeleteReplayButton from "./replay-delete-button";
@@ -118,6 +119,7 @@ export default function ReplayHistory({
 }: ReplayHistoryProps) {
   const [editingReplay, setEditingReplay] = useState<ReplayCode | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [filteredReplays, setFilteredReplays] = useState<ReplayCode[]>(replays);
   const { toast } = useToast();
   const router = useRouter();
   const supabase = createClient();
@@ -168,9 +170,17 @@ export default function ReplayHistory({
     }
   };
 
+  const groupedReplays = groupReplaysByDateAndTime(filteredReplays);
+
   return (
     <div className="flex flex-col gap-4">
-      {replays.length === 0 ? (
+      <ReplayFilters
+        replays={replays}
+        maps={maps}
+        onFilterChange={setFilteredReplays}
+      />
+
+      {groupedReplays.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
           <Inbox className="text-muted-foreground mb-4" />
           <p className="text-lg font-medium text-muted-foreground">
@@ -183,7 +193,7 @@ export default function ReplayHistory({
       ) : (
         <div className="flex-1 overflow-hidden rounded-lg border border-border/40 bg-background shadow">
           <div className="h-full overflow-y-auto">
-            {groupReplaysByDateAndTime(replays).map(({ date, times }) => (
+            {groupedReplays.map(({ date, times }) => (
               <div
                 key={date}
                 className="border-b border-border/40 last:border-0"

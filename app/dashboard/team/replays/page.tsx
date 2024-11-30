@@ -18,7 +18,7 @@ export default async function DashboardTeamReplayPage() {
   const supabase = await createClient();
   const profile = await requireProfile();
 
-  // Fetch the replays and maps
+  // Fetch the replays and maps with all necessary relationships
   const { data: replaysData, error: replaysError } = await supabase
     .from("replay_codes")
     .select(
@@ -42,14 +42,15 @@ export default async function DashboardTeamReplayPage() {
       game_mode:game_modes!game_mode_id(name)
     `
     )
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .order("name", { ascending: true });
 
   if (replaysError || mapsError) {
     console.error("Error fetching data:", replaysError || mapsError);
     return <div>Error loading data</div>;
   }
 
-  // Transform the data as needed
+  // Transform the data for proper typing
   const replays = replaysData.map((replay) => ({
     ...replay,
     map: {
