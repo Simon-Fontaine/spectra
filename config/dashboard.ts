@@ -106,7 +106,7 @@ export function getDashboardConfig(profile: Profile): NavConfig {
     navSecondary: [
       {
         title: "Help",
-        url: "/dashboard/help",
+        url: "mailto:help@owspectra.com",
         icon: HelpCircle,
       },
     ],

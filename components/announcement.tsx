@@ -5,7 +5,7 @@ import Link from "next/link";
 export function Announcement() {
   return (
     <Link
-      href="https://www.youtube.com"
+      href="https://www.youtube.com/watch?v=Ji4bltE3nus"
       target="_blank"
       className="group mb-2 inline-flex items-center px-0.5 text-sm font-medium"
     >

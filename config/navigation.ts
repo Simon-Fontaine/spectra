@@ -27,7 +27,7 @@ export const navigationConfig: NavigationItem[] = [
   },
   {
     title: "Roster Reveal",
-    href: "https://www.youtube.com/",
+    href: "https://www.youtube.com/watch?v=Ji4bltE3nus",
     disabled: false,
     external: true,
   },
