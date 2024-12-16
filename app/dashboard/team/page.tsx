@@ -74,17 +74,8 @@ export default async function DashboardTeamPage() {
 
   // Fetch the replays with map and game mode data
   const { data: replays, error } = await supabase
-    .from("replay_codes")
-    .select(
-      `
-      *,
-      map:maps!map_id(
-        id,
-        name,
-        game_mode:game_modes!game_mode_id(name)
-      )
-    `
-    )
+    .from("replays")
+    .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {

@@ -37,7 +37,7 @@ export default function DeleteReplayButton({
   const handleDelete = async () => {
     try {
       const { error } = await supabase
-        .from("replay_codes")
+        .from("replays")
         .delete()
         .eq("id", replayId);
 
