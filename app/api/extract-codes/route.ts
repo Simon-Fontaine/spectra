@@ -185,7 +185,7 @@ async function applyRateLimit(userId: string) {
 }
 
 function validateFile(file: File | null) {
-  const ALLOWED_TYPES = ["png", "jpeg", "gif", "webp"];
+  const ALLOWED_TYPES = ["png", "jpeg", "jpg", "gif", "webp"];
 
   if (!file) {
     throw new Response(
@@ -198,8 +198,7 @@ function validateFile(file: File | null) {
   if (!extension || !ALLOWED_TYPES.includes(extension.toLowerCase())) {
     throw new Response(
       JSON.stringify({
-        error:
-          "Invalid file format. Please upload a PNG, JPEG, GIF, or WebP image.",
+        error: `Invalid file format ".${extension}". Please upload a PNG, JPEG, GIF, or WebP image.`,
       }),
       { status: 400 }
     );
