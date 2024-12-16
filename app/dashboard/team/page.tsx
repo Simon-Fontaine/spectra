@@ -6,28 +6,46 @@ import {
 import { Metadata } from "next";
 import { MatchHistoryAreaChart } from "@/components/match-history-area-chart";
 import { StatCards } from "@/components/stat-cards";
+import { Database } from "@/lib/database.types";
 
 export const metadata: Metadata = {
   title: "Team Overview",
   description: "Analytics and insights from your team's match history.",
 };
 
-const calculateStats = (replays: any[]) => {
-  // Use reduce to calculate all stats in a single pass
-  const stats = replays.reduce(
-    (acc, replay) => {
-      // Update total counts
-      acc.totalReplays++;
-      acc[replay.result.toLowerCase()]++;
+type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
-      // Get the game mode
-      const gameMode = replay.map.game_mode.name;
-      if (!acc.gameModes[gameMode]) {
-        acc.gameModes[gameMode] = { total: 0, victories: 0 };
+interface Stats {
+  totalReplays: number;
+  victories: number;
+  defeats: number;
+  draws: number;
+  overallWinRate: number;
+  gameModeWinRates: { mode: string; winRate: number; total: number }[];
+}
+
+/**
+ * Calculates aggregate statistics from a list of replays.
+ */
+function calculateStats(replays: Replay[]): Stats {
+  // Aggregate stats
+  const { totalReplays, victory, defeat, draw, gameModes } = replays.reduce(
+    (acc, replay) => {
+      acc.totalReplays += 1;
+
+      const resultKey = replay.result.toLowerCase() as
+        | "victory"
+        | "defeat"
+        | "draw";
+      acc[resultKey] += 1;
+
+      if (!acc.gameModes[replay.map_mode]) {
+        acc.gameModes[replay.map_mode] = { total: 0, victories: 0 };
       }
-      acc.gameModes[gameMode].total++;
+
+      acc.gameModes[replay.map_mode].total += 1;
       if (replay.result === "Victory") {
-        acc.gameModes[gameMode].victories++;
+        acc.gameModes[replay.map_mode].victories += 1;
       }
 
       return acc;
@@ -37,42 +55,68 @@ const calculateStats = (replays: any[]) => {
       victory: 0,
       defeat: 0,
       draw: 0,
-      gameModes: {},
+      gameModes: {} as Record<string, { total: number; victories: number }>,
     }
   );
 
-  // Calculate win rates
   const overallWinRate =
-    stats.totalReplays > 0
-      ? ((stats.victory / stats.totalReplays) * 100).toFixed(1)
-      : 0;
+    totalReplays > 0 ? Number(((victory / totalReplays) * 100).toFixed(1)) : 0;
 
-  const gameModeWinRates = Object.entries(stats.gameModes).map(
-    ([mode, data]: [string, any]) => ({
+  const gameModeWinRates = Object.entries(gameModes)
+    .map(([mode, data]) => ({
       mode,
       winRate:
-        data.total > 0 ? ((data.victories / data.total) * 100).toFixed(1) : 0,
+        data.total > 0
+          ? Number(((data.victories / data.total) * 100).toFixed(1))
+          : 0,
       total: data.total,
-    })
-  ) as { mode: string; winRate: number; total: number }[];
-
-  // Sort game modes by total matches
-  gameModeWinRates.sort((a, b) => b.total - a.total);
+    }))
+    .sort((a, b) => b.total - a.total);
 
   return {
-    totalReplays: Number(stats.totalReplays),
-    victories: Number(stats.victory),
-    defeats: Number(stats.defeat),
-    draws: Number(stats.draw),
-    overallWinRate: Number(overallWinRate),
-    gameModeWinRates: gameModeWinRates,
+    totalReplays,
+    victories: victory,
+    defeats: defeat,
+    draws: draw,
+    overallWinRate,
+    gameModeWinRates,
   };
-};
+}
+
+/**
+ * Prepares the replay history data for the area chart.
+ */
+function prepareMatchHistory(replays: Replay[]) {
+  const historyMap = replays.reduce(
+    (acc, replay) => {
+      const date = new Date(replay.created_at).toISOString().split("T")[0];
+      const resultKey = replay.result.toLowerCase() as
+        | "victory"
+        | "defeat"
+        | "draw";
+
+      if (!acc[date]) {
+        acc[date] = { date, victory: 0, defeat: 0, draw: 0 };
+      }
+
+      acc[date][resultKey] += 1;
+
+      return acc;
+    },
+    {} as Record<
+      string,
+      { date: string; victory: number; defeat: number; draw: number }
+    >
+  );
+
+  return Object.values(historyMap).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+}
 
 export default async function DashboardTeamPage() {
   const supabase = await createClient();
 
-  // Fetch the replays with map and game mode data
   const { data: replays, error } = await supabase
     .from("replays")
     .select("*")
@@ -82,60 +126,50 @@ export default async function DashboardTeamPage() {
     console.error("Error fetching replays:", error);
     return (
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <div>
+        <section>
           <PageHeaderHeading>Team Overview</PageHeaderHeading>
           <PageHeaderDescription>
             There was an error loading the team analytics.
           </PageHeaderDescription>
-        </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (!replays || replays.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <section>
+          <PageHeaderHeading>Team Overview</PageHeaderHeading>
+          <PageHeaderDescription>
+            No match data found. Upload your first replay to start tracking your
+            team's performance.
+          </PageHeaderDescription>
+        </section>
       </div>
     );
   }
 
   const stats = calculateStats(replays);
-
-  // Calculate match history data for the chart
-  type ReplayHistoryType = Record<
-    string,
-    { date: string; victory: number; defeat: number; draw: number }
-  >;
-
-  const replaysHistory = replays.reduce((acc, replay) => {
-    const date = new Date(replay.created_at).toISOString().split("T")[0];
-    const result = replay.result;
-    const key = result.toLowerCase() as "victory" | "defeat" | "draw";
-
-    if (!acc[date]) {
-      acc[date] = { date, victory: 0, defeat: 0, draw: 0 };
-    }
-
-    acc[date][key] += 1;
-
-    return acc;
-  }, {} as ReplayHistoryType);
-
-  const replaysHistoryArray = Object.values(replaysHistory).sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const replaysHistoryArray = prepareMatchHistory(replays);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      <div>
+    <div className="flex flex-1 flex-col gap-8 p-4">
+      <section>
         <PageHeaderHeading>Team Overview</PageHeaderHeading>
         <PageHeaderDescription>
           Analytics and insights from your team's match history.
         </PageHeaderDescription>
-      </div>
+      </section>
 
-      <div className="grid flex-1 scroll-mt-20 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-10">
-        {/* Quick Stats */}
+      <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-10">
         <StatCards stats={stats} />
+      </section>
 
-        {/* Charts */}
-        <div className="md:col-span-2 lg:col-span-3">
-          <MatchHistoryAreaChart chartData={replaysHistoryArray} />
-        </div>
-      </div>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Match History</h2>
+        <MatchHistoryAreaChart chartData={replaysHistoryArray} />
+      </section>
     </div>
   );
 }

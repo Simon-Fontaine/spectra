@@ -25,6 +25,7 @@ type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface EditDialogProps {
   replay: Replay;
+  maps: { id: string; name: string }[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (updatedReplay: Partial<Replay>) => Promise<void>;
@@ -32,6 +33,7 @@ interface EditDialogProps {
 
 export default function ReplayEditDialog({
   replay,
+  maps,
   open,
   onOpenChange,
   onSave,
@@ -80,9 +82,11 @@ export default function ReplayEditDialog({
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Map 1">Map 1</SelectItem>
-                <SelectItem value="Map 2">Map 2</SelectItem>
-                <SelectItem value="Map 3">Map 3</SelectItem>
+                {maps.map((map) => (
+                  <SelectItem key={map.id} value={map.id}>
+                    {map.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

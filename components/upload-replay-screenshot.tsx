@@ -9,82 +9,52 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/utils/supabase/client";
 
+const MAX_FILE_SIZE_MB = 10;
+
 export default function UploadReplayScreenshot() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
-
   const supabase = createClient();
-
-  const MAX_FILE_SIZE_MB = 10;
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
       if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
-        setError("Only image files are allowed.");
-        return;
-      }
-      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        setError(`File size exceeds the ${MAX_FILE_SIZE_MB} MB limit.`);
-        return;
-      }
+      const formData = new FormData();
+      formData.append("image", file);
 
       setLoading(true);
       setError(null);
 
       try {
-        // Upload the file to Supabase storage
-        const filePath = `replays/${crypto.randomUUID()}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("images")
-          .upload(filePath, file, {
-            upsert: true,
-            contentType: file.type,
-          });
+        const formData = new FormData();
+        formData.append("image", file);
 
-        if (uploadError || !uploadData) {
-          throw new Error("Failed to upload file to storage");
-        }
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("images").getPublicUrl(filePath);
-
-        if (!publicUrl) {
-          throw new Error("Failed to generate public URL");
-        }
-
-        // Now send the public URL to the API route
         const response = await fetch("/api/extract-codes", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url: publicUrl }),
+          body: formData,
         });
 
-        const { replays, error } = await response.json();
-        if (!response.ok || error) {
-          throw new Error(error || "Failed to extract codes.");
+        const json = await response.json();
+        if (!response.ok || json.error) {
+          throw new Error(json.error || "Failed to extract codes.");
         }
 
+        const { replays } = json;
         toast({
           title: "Success!",
-          description: `Successfully extracted ${replays.length} replay code${
-            replays.length === 1 ? "" : "s"
-          }`,
+          description: `Successfully extracted ${replays.length} replay code${replays.length === 1 ? "" : "s"}`,
         });
 
-        // Refresh the page to display new replays
+        // Refresh to show the newly uploaded codes
         router.refresh();
-      } catch (err: any) {
-        setError(
-          err.message || "An error occurred while processing the image."
-        );
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : "An error occurred.";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -94,9 +64,7 @@ export default function UploadReplayScreenshot() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      "image/*": [],
-    },
+    accept: { "image/*": [] },
     maxSize: MAX_FILE_SIZE_MB * 1024 * 1024,
     multiple: false,
   });

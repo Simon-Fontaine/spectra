@@ -5,38 +5,10 @@ import { z } from "zod";
 import { RateLimiterRedis } from "rate-limiter-flexible";
 import Redis from "ioredis";
 
-const CONFIG = {
-  RATE_LIMIT_PER_USER: 10,
-  RATE_LIMIT_INTERVAL: 60 * 30, // 30 minutes
-} as const;
-
-const redisClient = new Redis(
-  process.env.REDIS_URL || "redis://localhost:6379"
-);
-
-const rateLimiter = new RateLimiterRedis({
-  storeClient: redisClient,
-  points: CONFIG.RATE_LIMIT_PER_USER,
-  duration: CONFIG.RATE_LIMIT_INTERVAL,
-  keyPrefix: "rateLimiter",
-});
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const ReplaySchema = z.object({
-  replays: z.array(
-    z.object({
-      code: z.string().regex(/^[A-Z0-9]{5,12}$/i),
-      map_name: z.string(),
-      map_mode: z.string(),
-      game_mode: z.string(),
-      result: z.enum(["Victory", "Defeat", "Draw"]),
-      score: z.string().regex(/^\d+-\d+$/),
-    })
-  ),
-});
+// ---- Configuration Constants ----
+const RATE_LIMIT_PER_USER = 10;
+const RATE_LIMIT_INTERVAL = 60 * 60; // 1 hour
+const MAX_FILE_SIZE_MB = 10;
 
 const SYSTEM_PROMPT = `
 You are an AI specialized in extracting Overwatch 2 match replay information from screenshots of the game's replay menu. Analyze the provided image and output the following JSON structure exactly as shown (no extra fields or formatting):
@@ -149,119 +121,212 @@ You are an AI specialized in extracting Overwatch 2 match replay information fro
 \`\`\`
 `;
 
+const ReplaySchema = z.object({
+  replays: z.array(
+    z.object({
+      code: z.string().regex(/^[A-Z0-9]{5,12}$/i),
+      map_name: z.string(),
+      map_mode: z.string(),
+      game_mode: z.string(),
+      result: z.enum(["Victory", "Defeat", "Draw"]),
+      score: z.string().regex(/^\d+-\d+$/),
+    })
+  ),
+});
+
+// ---- Rate Limiting Setup ----
+const redisClient = new Redis(
+  process.env.REDIS_URL || "redis://localhost:6379"
+);
+const rateLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  points: RATE_LIMIT_PER_USER,
+  duration: RATE_LIMIT_INTERVAL,
+  keyPrefix: "rateLimiter",
+});
+
+// ---- OpenAI Setup ----
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// ---- Helper Functions ----
+async function getAuthenticatedUser() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    throw new Response(
+      JSON.stringify({ error: "You must be logged in to use this service" }),
+      { status: 401 }
+    );
+  }
+  return { user, supabase };
+}
+
+async function applyRateLimit(userId: string) {
+  const rateLimitKey = `rl:${userId}`;
+  try {
+    await rateLimiter.consume(rateLimitKey, 1);
+  } catch (rlError: any) {
+    if (rlError instanceof Error) {
+      throw rlError;
+    }
+    const msBeforeNext = rlError.msBeforeNext || 60000;
+    throw new Response(
+      JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.round(msBeforeNext / 1000)) },
+      }
+    );
+  }
+}
+
+function validateFile(file: File | null) {
+  const ALLOWED_TYPES = ["png", "jpeg", "gif", "webp"];
+
+  if (!file) {
+    throw new Response(
+      JSON.stringify({ error: "No image file found in the request" }),
+      { status: 400 }
+    );
+  }
+
+  const extension = file.name.split(".").pop();
+  if (!extension || !ALLOWED_TYPES.includes(extension.toLowerCase())) {
+    throw new Response(
+      JSON.stringify({
+        error:
+          "Invalid file format. Please upload a PNG, JPEG, GIF, or WebP image.",
+      }),
+      { status: 400 }
+    );
+  }
+
+  if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+    throw new Response(
+      JSON.stringify({
+        error: `File size exceeds ${MAX_FILE_SIZE_MB}MB limit`,
+      }),
+      { status: 400 }
+    );
+  }
+}
+
+async function uploadImageToSupabase(file: File) {
+  const supabase = await createClient();
+  const filePath = `replays/${crypto.randomUUID()}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from("images")
+    .upload(filePath, file, {
+      upsert: true,
+      contentType: file.type,
+    });
+
+  if (uploadError || !uploadData) {
+    throw new Error("Failed to upload file to storage");
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("images").getPublicUrl(filePath);
+  if (!publicUrl) {
+    throw new Error("Failed to generate public URL");
+  }
+
+  return publicUrl;
+}
+
+async function getOpenAIReplays(base64Image: string) {
+  const openAIResponse = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "system",
+        content: [
+          {
+            text: SYSTEM_PROMPT,
+            type: "text",
+          },
+        ],
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: {
+              url: base64Image,
+            },
+          },
+        ],
+      },
+    ],
+    response_format: {
+      type: "json_object",
+    },
+    temperature: 0,
+    max_completion_tokens: 500,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+  });
+
+  const responseContent = openAIResponse.choices?.[0]?.message?.content;
+  if (!responseContent) {
+    throw new Error("No content in OpenAI response");
+  }
+
+  const parsed = JSON.parse(responseContent);
+  return ReplaySchema.parse(parsed);
+}
+
+// ---- Main Handler ----
 export async function POST(request: Request) {
   console.time("Request");
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, supabase } = await getAuthenticatedUser();
+    await applyRateLimit(user.id);
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "You must be logged in to use this service" },
-        { status: 401 }
-      );
-    }
+    const formData = await request.formData();
+    const file = formData.get("image") as File | null;
 
-    // Rate Limiting using Redis
-    const rateLimitKey = `rl:${user.id}`;
-    try {
-      await rateLimiter.consume(rateLimitKey, 1); // Consume 1 point
-    } catch (rlRejected: any) {
-      if (rlRejected instanceof Error) {
-        throw rlRejected;
-      } else {
-        return NextResponse.json(
-          {
-            error:
-              "Rate limit exceeded for your account. Please try again later.",
-          },
-          {
-            status: 429,
-            headers: {
-              "Retry-After":
-                String(Math.round(rlRejected.msBeforeNext / 1000)) || "60",
-            },
-          }
-        );
-      }
-    }
+    validateFile(file);
+    const publicUrl = await uploadImageToSupabase(file!);
+    const imageBuffer = await file!.arrayBuffer();
+    const base64Image = `data:${file!.type};base64,${Buffer.from(imageBuffer).toString("base64")}`;
 
-    const body = await request.json();
-    const { url } = body;
+    const validatedData = await getOpenAIReplays(base64Image);
 
-    if (!url || typeof url !== "string") {
-      return NextResponse.json(
-        { error: "Invalid or missing URL" },
-        { status: 400 }
-      );
-    }
-
-    const openAIResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: [
-            {
-              text: SYSTEM_PROMPT,
-              type: "text",
-            },
-          ],
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "image_url",
-              image_url: {
-                url: url,
-              },
-            },
-          ],
-        },
-      ],
-      response_format: {
-        type: "json_object",
-      },
-      temperature: 0,
-      max_completion_tokens: 500,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-    });
-
-    const responseContent = openAIResponse.choices[0]?.message?.content;
-    if (!responseContent) {
-      throw new Error("No content in OpenAI response");
-    }
-
-    const parsedResponse = JSON.parse(responseContent);
-    const validatedData = ReplaySchema.parse(parsedResponse);
-
-    const replayData = validatedData.replays.map((replay) => ({
-      ...replay,
+    // Attach additional info (e.g., who uploaded)
+    const replayData = validatedData.replays.map((r) => ({
+      ...r,
       uploaded_by: user.id,
-      uploaded_image_url: url,
+      uploaded_image_url: publicUrl,
     }));
-
-    console.log("Replay data:", replayData);
-    console.timeEnd("Request");
 
     const { error: insertError } = await supabase
       .from("replays")
       .insert(replayData);
-
     if (insertError) {
+      console.error("Failed to store replay codes", insertError);
       throw new Error("Failed to store replay codes");
     }
 
+    console.timeEnd("Request");
     return NextResponse.json(validatedData);
   } catch (error: any) {
-    console.error("Process error:", error);
-    const errorMessage = error.message || "Failed to process image";
-    const statusCode = error.status || 500;
-    return NextResponse.json({ error: errorMessage }, { status: statusCode });
+    console.timeEnd("Request");
+
+    // If it's a Response, just return it
+    if (error instanceof Response) {
+      return error;
+    }
+
+    const message = error.message || "Failed to process image";
+    const status = error.status || 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

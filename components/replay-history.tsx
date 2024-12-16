@@ -19,11 +19,102 @@ type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface ReplayHistoryProps {
   replays: Replay[];
+  maps: { id: string; name: string }[];
+  match_modes: { id: string; name: string }[];
   profile: Profile;
 }
 
+/**
+ * Determine the color styling based on the replay result.
+ */
+function getResultColor(result: Replay["result"]) {
+  switch (result) {
+    case "Victory":
+      return "bg-green-500/20 text-green-700 dark:text-green-300";
+    case "Defeat":
+      return "bg-red-500/20 text-red-700 dark:text-red-300";
+    case "Draw":
+      return "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300";
+  }
+}
+
+/**
+ * Renders the badges for a given replay.
+ */
+function renderBadges(replay: Replay) {
+  return (
+    <>
+      <Badge
+        variant="outline"
+        className="bg-purple-500/20 text-purple-700 dark:text-purple-300 whitespace-nowrap"
+      >
+        {replay.map_name}
+      </Badge>
+      <Badge variant="outline" className="whitespace-nowrap">
+        {replay.map_mode}
+      </Badge>
+      <Badge
+        variant="outline"
+        className={cn(getResultColor(replay.result), "whitespace-nowrap")}
+      >
+        {replay.result}
+      </Badge>
+      {replay.is_reviewed && (
+        <Badge variant="secondary" className="whitespace-nowrap">
+          Reviewed
+        </Badge>
+      )}
+    </>
+  );
+}
+
+/**
+ * Renders the action buttons (copy, edit, delete) for a given replay.
+ * Any changes here affect both small and large screen layouts where these buttons are used.
+ */
+function renderActionButtons(
+  replay: Replay,
+  copiedCode: string | null,
+  handleCopy: (code: string) => void,
+  setEditingReplay: (replay: Replay) => void,
+  canEditOrDelete: boolean
+) {
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => handleCopy(replay.code)}
+      >
+        {copiedCode === replay.code ? (
+          <Check className="h-4 w-4 text-green-500" />
+        ) : (
+          <Copy className="h-4 w-4" />
+        )}
+      </Button>
+      {canEditOrDelete && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setEditingReplay(replay)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <DeleteReplayButton
+            replayId={replay.id}
+            showButton={canEditOrDelete}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
+/**
+ * Groups replays by date and time for display.
+ */
 function groupReplaysByDateAndTime(replays: Replay[]) {
-  // Map replays to include Date objects
   const replayData = replays.map((replay) => {
     const fullDate = new Date(replay.created_at);
     return {
@@ -42,10 +133,8 @@ function groupReplaysByDateAndTime(replays: Replay[]) {
     };
   });
 
-  // Sort replays by timestamp descending
   replayData.sort((a, b) => b.timestamp - a.timestamp);
 
-  // Group by date
   const dateMap = new Map<string, typeof replayData>();
 
   replayData.forEach(({ dateKey, ...rest }) => {
@@ -55,9 +144,7 @@ function groupReplaysByDateAndTime(replays: Replay[]) {
     dateMap.get(dateKey)!.push({ dateKey, ...rest });
   });
 
-  // Prepare the grouped data
   const groupedData = Array.from(dateMap.entries()).map(([date, replays]) => {
-    // Group by time
     const timeMap = new Map<string, Replay[]>();
 
     replays.forEach(({ timeKey, replay }) => {
@@ -67,7 +154,6 @@ function groupReplaysByDateAndTime(replays: Replay[]) {
       timeMap.get(timeKey)!.push(replay);
     });
 
-    // Sort times in descending order
     const times = Array.from(timeMap.entries()).sort(([timeA], [timeB]) => {
       const dateTimeA = new Date(`${date} ${timeA}`).getTime();
       const dateTimeB = new Date(`${date} ${timeB}`).getTime();
@@ -80,7 +166,6 @@ function groupReplaysByDateAndTime(replays: Replay[]) {
     };
   });
 
-  // Sort dates in descending order
   groupedData.sort((a, b) => {
     const dateA = new Date(a.date).getTime();
     const dateB = new Date(b.date).getTime();
@@ -92,6 +177,8 @@ function groupReplaysByDateAndTime(replays: Replay[]) {
 
 export default function ReplayHistory({
   replays,
+  maps,
+  match_modes,
   profile,
 }: ReplayHistoryProps) {
   const [editingReplay, setEditingReplay] = useState<Replay | null>(null);
@@ -113,15 +200,12 @@ export default function ReplayHistory({
         .from("replays")
         .update(updates)
         .eq("id", replayId);
-
       if (error) throw error;
 
       toast({
         title: "Success",
         description: "Replay code updated successfully",
       });
-
-      // Refresh the page to get the updated data
       router.refresh();
     } catch (error) {
       console.error("Error updating replay code:", error);
@@ -133,22 +217,16 @@ export default function ReplayHistory({
     }
   };
 
-  const getResultColor = (result: Replay["result"]) => {
-    switch (result) {
-      case "Victory":
-        return "bg-green-500/20 text-green-700 dark:text-green-300";
-      case "Defeat":
-        return "bg-red-500/20 text-red-700 dark:text-red-300";
-      case "Draw":
-        return "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300";
-    }
-  };
-
   const groupedReplays = groupReplaysByDateAndTime(filteredReplays);
 
   return (
     <div className="flex flex-col gap-4">
-      <ReplayFilters replays={replays} onFilterChange={setFilteredReplays} />
+      <ReplayFilters
+        replays={replays}
+        maps={maps}
+        match_modes={match_modes}
+        onFilterChange={setFilteredReplays}
+      />
 
       {groupedReplays.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -171,171 +249,85 @@ export default function ReplayHistory({
                 <div className="sticky top-0 z-10 bg-muted/80 backdrop-blur p-4 border-b border-border/40">
                   <h3 className="text-sm font-medium">{date}</h3>
                 </div>
-                {times.map(([time, replays]) => (
+                {times.map(([time, replaysAtTime]) => (
                   <div key={time} className="divide-y divide-border/40">
                     <div className="bg-muted/80 backdrop-blur p-4 border-b border-border/40">
                       <h4 className="text-sm font-semibold">{time}</h4>
                     </div>
-                    {replays.map((replay) => (
-                      <div
-                        key={replay.id}
-                        className="p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
-                          {/* Left Section */}
-                          <div className="flex items-center gap-4">
-                            <code className="text-lg font-mono">
-                              {replay.code}
-                            </code>
-                            {/* Badges for Large Screens */}
-                            <div className="hidden sm:flex flex-wrap items-center gap-2">
-                              <Badge
-                                variant="outline"
-                                className="bg-purple-500/20 text-purple-700 dark:text-purple-300 whitespace-nowrap"
-                              >
-                                {replay.map_name}
-                              </Badge>
-                              <Badge
-                                variant="outline"
-                                className="whitespace-nowrap"
-                              >
-                                {replay.map_mode}
-                              </Badge>
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  getResultColor(replay.result),
-                                  "whitespace-nowrap"
+                    {replaysAtTime.map((replay) => {
+                      const canEditOrDelete =
+                        profile.app_role === "admin" ||
+                        profile.id === replay.uploaded_by;
+
+                      return (
+                        <div
+                          key={replay.id}
+                          className="p-4 hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
+                            <div className="flex items-center gap-4">
+                              <code className="text-lg font-mono">
+                                {replay.code}
+                              </code>
+
+                              {/* Badges for large screens */}
+                              <div className="hidden sm:flex flex-wrap items-center gap-2">
+                                {renderBadges(replay)}
+                              </div>
+
+                              {/* Action buttons for small screens */}
+                              <div className="sm:hidden flex gap-1">
+                                {renderActionButtons(
+                                  replay,
+                                  copiedCode,
+                                  handleCopy,
+                                  setEditingReplay,
+                                  canEditOrDelete
                                 )}
-                              >
-                                {replay.result}
-                              </Badge>
-                              {replay.is_reviewed && (
-                                <Badge
-                                  variant="secondary"
-                                  className="whitespace-nowrap"
-                                >
-                                  Reviewed
-                                </Badge>
-                              )}
+                              </div>
                             </div>
-                            {/* Buttons for Small Screens */}
-                            <div className="sm:hidden flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleCopy(replay.code)}
-                              >
-                                {copiedCode === replay.code ? (
-                                  <Check className="h-4 w-4 text-green-500" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                              {(profile.app_role === "admin" ||
-                                profile.id === replay.uploaded_by) && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setEditingReplay(replay)}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <DeleteReplayButton
-                                    replayId={replay.id}
-                                    showButton={profile.app_role === "admin"}
-                                  />
-                                </>
+
+                            {/* Badges for small screens */}
+                            <div className="sm:hidden flex flex-wrap items-center gap-2 mt-2">
+                              {renderBadges(replay)}
+                            </div>
+
+                            {/* Action buttons for large screens */}
+                            <div className="hidden sm:flex gap-1">
+                              {renderActionButtons(
+                                replay,
+                                copiedCode,
+                                handleCopy,
+                                setEditingReplay,
+                                canEditOrDelete
                               )}
                             </div>
                           </div>
-                          {/* Badges for Small Screens */}
-                          <div className="sm:hidden flex flex-wrap items-center gap-2 mt-2">
-                            <Badge
-                              variant="outline"
-                              className="bg-purple-500/20 text-purple-700 dark:text-purple-300 whitespace-nowrap"
-                            >
-                              {replay.map_name}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className="whitespace-nowrap"
-                            >
-                              {replay.map_mode}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                getResultColor(replay.result),
-                                "whitespace-nowrap"
+
+                          {/* Notes and Uploaded Image */}
+                          {(replay.notes || replay.uploaded_image_url) && (
+                            <div className="mt-2 flex flex-col gap-2">
+                              {replay.notes && (
+                                <p className="text-sm text-muted-foreground">
+                                  {replay.notes}
+                                </p>
                               )}
-                            >
-                              {replay.result}
-                            </Badge>
-                            {replay.is_reviewed && (
-                              <Badge
-                                variant="secondary"
-                                className="whitespace-nowrap"
-                              >
-                                Reviewed
-                              </Badge>
-                            )}
-                          </div>
-                          {/* Buttons for Large Screens */}
-                          <div className="hidden sm:flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleCopy(replay.code)}
-                            >
-                              {copiedCode === replay.code ? (
-                                <Check className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                            {(profile.app_role === "admin" ||
-                              profile.id === replay.uploaded_by) && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setEditingReplay(replay)}
+                              {replay.uploaded_image_url && (
+                                <a
+                                  href={replay.uploaded_image_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:underline inline-flex items-center gap-1 text-purple-700 dark:text-purple-300"
                                 >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <DeleteReplayButton
-                                  replayId={replay.id}
-                                  showButton={profile.app_role === "admin"}
-                                />
-                              </>
-                            )}
-                          </div>
+                                  View Original Screenshot
+                                  <Icons.external className="h-3 w-3" />
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        {/* Notes and Uploaded Image */}
-                        {(replay.notes || replay.uploaded_image_url) && (
-                          <div className="mt-2 flex flex-col gap-2">
-                            {replay.notes && (
-                              <p className="text-sm text-muted-foreground">
-                                {replay.notes}
-                              </p>
-                            )}
-                            {replay.uploaded_image_url && (
-                              <a
-                                href={replay.uploaded_image_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline inline-flex items-center gap-1 text-purple-700 dark:text-purple-300"
-                              >
-                                View Original Screenshot
-                                <Icons.external className="h-3 w-3" />
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ))}
               </div>
@@ -347,6 +339,7 @@ export default function ReplayHistory({
       {editingReplay && (
         <ReplayEditDialog
           replay={editingReplay}
+          maps={maps}
           open={!!editingReplay}
           onOpenChange={(open) => !open && setEditingReplay(null)}
           onSave={(updates) => handleUpdate(editingReplay.id, updates)}

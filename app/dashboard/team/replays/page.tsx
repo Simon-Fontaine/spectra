@@ -7,6 +7,7 @@ import ReplayHistory from "@/components/replay-history";
 import { createClient } from "@/utils/supabase/server";
 import { requireProfile } from "@/utils/profile";
 import { Metadata } from "next";
+import _ from "lodash";
 
 export const metadata: Metadata = {
   title: "Replays",
@@ -24,6 +25,20 @@ export default async function DashboardTeamReplayPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
+  if (replaysError) {
+    console.error("Failed to fetch replays:", replaysError);
+  }
+
+  const maps = _.uniqBy(replaysData, "map_name").map((replay) => ({
+    id: replay.map_name,
+    name: replay.map_name,
+  }));
+
+  const match_modes = _.uniqBy(replaysData, "map_mode").map((replay) => ({
+    id: replay.map_mode,
+    name: replay.map_mode,
+  }));
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
       <div>
@@ -33,7 +48,12 @@ export default async function DashboardTeamReplayPage() {
         </PageHeaderDescription>
       </div>
       <UploadReplayScreenshot />
-      <ReplayHistory replays={replaysData || []} profile={profile} />
+      <ReplayHistory
+        replays={replaysData || []}
+        maps={maps}
+        match_modes={match_modes}
+        profile={profile}
+      />
     </div>
   );
 }

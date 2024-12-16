@@ -26,27 +26,61 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const chartConfig = {
-  victory: {
-    label: "Victory",
-    color: "hsl(var(--chart-2))",
-  },
-  defeat: {
-    label: "Defeat",
-    color: "hsl(var(--chart-1))",
-  },
-  draw: {
-    label: "Draw",
-    color: "hsl(var(--chart-4))",
-  },
-} satisfies ChartConfig;
-
 type MatchHistoryType = {
   date: string;
   victory: number;
   defeat: number;
   draw: number;
 }[];
+
+interface ExtendedChartConfig extends ChartConfig {
+  [key: string]: {
+    label: string;
+    color: string;
+    fillId: string;
+    varName: string;
+  };
+}
+
+const chartConfig = {
+  victory: {
+    label: "Victory",
+    color: "hsl(var(--chart-2))",
+    fillId: "fillVictory",
+    varName: "--color-victory",
+  },
+  defeat: {
+    label: "Defeat",
+    color: "hsl(var(--chart-1))",
+    fillId: "fillDefeat",
+    varName: "--color-defeat",
+  },
+  draw: {
+    label: "Draw",
+    color: "hsl(var(--chart-4))",
+    fillId: "fillDraw",
+    varName: "--color-draw",
+  },
+} satisfies ExtendedChartConfig;
+
+const TIME_RANGE_LABELS: Record<string, string> = {
+  "90d": "3 months",
+  "30d": "30 days",
+  "7d": "7 days",
+};
+
+function getLabelForTimeRange(range: string): string {
+  return TIME_RANGE_LABELS[range] || "3 months";
+}
+
+function createLinearGradient(id: string, varName: string) {
+  return (
+    <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="5%" stopColor={`var(${varName})`} stopOpacity={0.8} />
+      <stop offset="95%" stopColor={`var(${varName})`} stopOpacity={0.1} />
+    </linearGradient>
+  );
+}
 
 export function MatchHistoryAreaChart({
   chartData,
@@ -57,12 +91,20 @@ export function MatchHistoryAreaChart({
 
   const filteredData = React.useMemo(() => {
     const referenceDate = new Date();
-    let daysToSubtract = 90;
-    if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
+    let daysToSubtract: number;
+
+    switch (timeRange) {
+      case "30d":
+        daysToSubtract = 30;
+        break;
+      case "7d":
+        daysToSubtract = 7;
+        break;
+      default:
+        daysToSubtract = 90;
+        break;
     }
+
     const startDate = new Date(referenceDate);
     startDate.setDate(startDate.getDate() - daysToSubtract);
 
@@ -73,6 +115,8 @@ export function MatchHistoryAreaChart({
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [chartData, timeRange]);
+
+  const timeLabel = getLabelForTimeRange(timeRange);
 
   if (filteredData.length === 0) {
     return (
@@ -87,25 +131,19 @@ export function MatchHistoryAreaChart({
 
   return (
     <Card>
-      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+      <CardHeader className="flex flex-col gap-2 border-b py-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="grid flex-1 gap-1 text-center sm:text-left">
           <CardTitle>Match History</CardTitle>
           <CardDescription>
-            Showing your last{" "}
-            {timeRange === "90d"
-              ? "3 months"
-              : timeRange === "30d"
-                ? "30 days"
-                : "7 days"}{" "}
-            of match history.
+            Showing your last {timeLabel} of match history.
           </CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger
-            className="w-[160px] rounded-lg sm:ml-auto"
+            className="w-[160px] rounded-lg"
             aria-label="Select a time range"
           >
-            <SelectValue placeholder="Last 3 months" />
+            <SelectValue placeholder={`Last ${timeLabel}`} />
           </SelectTrigger>
           <SelectContent className="rounded-xl">
             <SelectItem value="90d" className="rounded-lg">
@@ -127,42 +165,9 @@ export function MatchHistoryAreaChart({
         >
           <AreaChart data={filteredData}>
             <defs>
-              <linearGradient id="fillVictory" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-victory)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-victory)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillDefeat" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-defeat)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-defeat)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillDraw" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-draw)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-draw)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
+              {Object.values(chartConfig).map((cfg) =>
+                createLinearGradient(cfg.fillId, cfg.varName)
+              )}
             </defs>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -193,23 +198,24 @@ export function MatchHistoryAreaChart({
                 />
               }
             />
+
             <Area
               dataKey="victory"
               type="natural"
-              fill="url(#fillVictory)"
-              stroke="var(--color-victory)"
+              fill={`url(#${chartConfig.victory.fillId})`}
+              stroke={`var(${chartConfig.victory.varName})`}
             />
             <Area
               dataKey="defeat"
               type="natural"
-              fill="url(#fillDefeat)"
-              stroke="var(--color-defeat)"
+              fill={`url(#${chartConfig.defeat.fillId})`}
+              stroke={`var(${chartConfig.defeat.varName})`}
             />
             <Area
               dataKey="draw"
               type="natural"
-              fill="url(#fillDraw)"
-              stroke="var(--color-draw)"
+              fill={`url(#${chartConfig.draw.fillId})`}
+              stroke={`var(${chartConfig.draw.varName})`}
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>

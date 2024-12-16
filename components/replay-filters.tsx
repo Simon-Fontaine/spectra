@@ -1,5 +1,4 @@
-import React from "react";
-import _ from "lodash";
+import { useCallback, useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -16,40 +15,47 @@ type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface ReplayFiltersProps {
   replays: Replay[];
+  maps: { id: string; name: string }[];
+  match_modes: { id: string; name: string }[];
   onFilterChange: (filteredReplays: Replay[]) => void;
+}
+
+function renderClearFiltersButton(clearFilters: () => void, className: string) {
+  return (
+    <Button
+      variant="ghost"
+      onClick={clearFilters}
+      className={className}
+      aria-label="Clear all filters"
+    >
+      <X className="h-4 w-4" />
+      Clear filters
+    </Button>
+  );
 }
 
 export default function ReplayFilters({
   replays,
+  maps,
+  match_modes,
   onFilterChange,
 }: ReplayFiltersProps) {
-  const [selectedMap, setSelectedMap] = React.useState<string>("");
-  const [selectedMode, setSelectedMode] = React.useState<string>("");
-  const [selectedStatus, setSelectedStatus] = React.useState<string>("");
+  const [selectedMap, setSelectedMap] = useState<string>("");
+  const [selectedMode, setSelectedMode] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
 
-  const gameModes = React.useMemo(() => {
-    return _.uniqBy(replays, "map_mode").map((replay) => replay.map_mode);
-  }, [replays]);
-
-  const maps = React.useMemo(() => {
-    return _.uniqBy(replays, "map_name").map((replay) => ({
-      id: replay.map_name,
-      name: replay.map_name,
-    }));
-  }, [replays]);
-
-  const filterReplays = React.useCallback(() => {
+  const filterReplays = useCallback(() => {
     let filtered = [...replays];
 
-    if (selectedMap) {
+    if (selectedMap && selectedMap !== "none") {
       filtered = filtered.filter((replay) => replay.map_name === selectedMap);
     }
 
-    if (selectedMode) {
+    if (selectedMode && selectedMode !== "none") {
       filtered = filtered.filter((replay) => replay.map_mode === selectedMode);
     }
 
-    if (selectedStatus) {
+    if (selectedStatus && selectedStatus !== "none") {
       if (selectedStatus === "reviewed") {
         filtered = filtered.filter((replay) => replay.is_reviewed);
       } else if (selectedStatus === "unreviewed") {
@@ -60,73 +66,126 @@ export default function ReplayFilters({
     onFilterChange(filtered);
   }, [replays, selectedMap, selectedMode, selectedStatus, onFilterChange]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     filterReplays();
   }, [selectedMap, selectedMode, selectedStatus, filterReplays]);
 
   const clearFilters = () => {
-    setSelectedMap("");
-    setSelectedMode("");
-    setSelectedStatus("");
+    setSelectedMap("none");
+    setSelectedMode("none");
+    setSelectedStatus("none");
   };
 
-  const hasActiveFilters = selectedMap || selectedMode || selectedStatus;
+  const hasActiveFilters =
+    (selectedMap && selectedMap !== "none") ||
+    (selectedMode && selectedMode !== "none") ||
+    (selectedStatus && selectedStatus !== "none");
 
   return (
-    <div className="flex flex-col md:flex-row md:flex-wrap items-center gap-4 py-4 lg:justify-end">
-      <Select value={selectedMap} onValueChange={setSelectedMap}>
-        <SelectTrigger className="md:w-[200px]">
-          <SelectValue placeholder="Select map" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {maps.map((map) => (
-              <SelectItem key={map.id} value={map.id}>
-                {map.name}
+    <fieldset className="flex flex-col gap-4 py-4 md:flex-row md:flex-wrap lg:justify-end">
+      <legend className="sr-only">Filter replay codes</legend>
+
+      {hasActiveFilters &&
+        renderClearFiltersButton(clearFilters, "gap-2 hidden lg:flex")}
+
+      {/* Map Filter */}
+      <div className="flex flex-col items-start">
+        <label htmlFor="map-filter" className="sr-only">
+          Map filter
+        </label>
+        <Select value={selectedMap || "none"} onValueChange={setSelectedMap}>
+          <SelectTrigger
+            id="map-filter"
+            className="md:w-[200px]"
+            aria-label="Filter by map"
+          >
+            <SelectValue placeholder="Select map" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="none" className="cursor-pointer">
+                None
               </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+              {maps.map((map) => (
+                <SelectItem
+                  key={map.id}
+                  value={map.id}
+                  className="cursor-pointer"
+                >
+                  {map.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Select value={selectedMode} onValueChange={setSelectedMode}>
-        <SelectTrigger className="md:w-[200px]">
-          <SelectValue placeholder="Select game mode" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {gameModes.map((mode) => (
-              <SelectItem key={mode} value={mode}>
-                {mode}
+      {/* Mode Filter */}
+      <div className="flex flex-col items-start">
+        <label htmlFor="mode-filter" className="sr-only">
+          Game mode filter
+        </label>
+        <Select value={selectedMode || "none"} onValueChange={setSelectedMode}>
+          <SelectTrigger
+            id="mode-filter"
+            className="md:w-[200px]"
+            aria-label="Filter by game mode"
+          >
+            <SelectValue placeholder="Select game mode" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="none" className="cursor-pointer">
+                None
               </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+              {match_modes.map((mode) => (
+                <SelectItem
+                  key={mode.id}
+                  value={mode.name}
+                  className="cursor-pointer"
+                >
+                  {mode.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-        <SelectTrigger className="md:w-[200px]">
-          <SelectValue placeholder="Review status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value="reviewed">Reviewed</SelectItem>
-            <SelectItem value="unreviewed">Not Reviewed</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-
-      {hasActiveFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearFilters}
-          className="gap-2"
+      {/* Review Status Filter */}
+      <div className="flex flex-col items-start">
+        <label htmlFor="review-status-filter" className="sr-only">
+          Review status filter
+        </label>
+        <Select
+          value={selectedStatus || "none"}
+          onValueChange={setSelectedStatus}
         >
-          <X className="h-4 w-4" />
-          Clear filters
-        </Button>
-      )}
-    </div>
+          <SelectTrigger
+            id="review-status-filter"
+            className="md:w-[200px]"
+            aria-label="Filter by review status"
+          >
+            <SelectValue placeholder="Review status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="none" className="cursor-pointer">
+                None
+              </SelectItem>
+              <SelectItem value="reviewed" className="cursor-pointer">
+                Reviewed
+              </SelectItem>
+              <SelectItem value="unreviewed" className="cursor-pointer">
+                Not Reviewed
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {hasActiveFilters &&
+        renderClearFiltersButton(clearFilters, "gap-2 lg:hidden")}
+    </fieldset>
   );
 }
