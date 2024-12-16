@@ -19,8 +19,8 @@ type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface ReplayHistoryProps {
   replays: Replay[];
-  maps: { id: string; name: string }[];
-  match_modes: { id: string; name: string }[];
+  map_names: { id: string; name: string }[];
+  map_modes: { id: string; name: string }[];
   profile: Profile;
 }
 
@@ -177,8 +177,8 @@ function groupReplaysByDateAndTime(replays: Replay[]) {
 
 export default function ReplayHistory({
   replays,
-  maps,
-  match_modes,
+  map_names,
+  map_modes,
   profile,
 }: ReplayHistoryProps) {
   const [editingReplay, setEditingReplay] = useState<Replay | null>(null);
@@ -223,8 +223,8 @@ export default function ReplayHistory({
     <div className="flex flex-col gap-4">
       <ReplayFilters
         replays={replays}
-        maps={maps}
-        match_modes={match_modes}
+        map_names={map_names}
+        map_modes={map_modes}
         onFilterChange={setFilteredReplays}
       />
 
@@ -339,7 +339,8 @@ export default function ReplayHistory({
       {editingReplay && (
         <ReplayEditDialog
           replay={editingReplay}
-          maps={maps}
+          map_names={map_names}
+          map_modes={map_modes}
           open={!!editingReplay}
           onOpenChange={(open) => !open && setEditingReplay(null)}
           onSave={(updates) => handleUpdate(editingReplay.id, updates)}

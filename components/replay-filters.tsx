@@ -15,8 +15,8 @@ type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface ReplayFiltersProps {
   replays: Replay[];
-  maps: { id: string; name: string }[];
-  match_modes: { id: string; name: string }[];
+  map_names: { id: string; name: string }[];
+  map_modes: { id: string; name: string }[];
   onFilterChange: (filteredReplays: Replay[]) => void;
 }
 
@@ -36,8 +36,8 @@ function renderClearFiltersButton(clearFilters: () => void, className: string) {
 
 export default function ReplayFilters({
   replays,
-  maps,
-  match_modes,
+  map_names,
+  map_modes,
   onFilterChange,
 }: ReplayFiltersProps) {
   const [selectedMap, setSelectedMap] = useState<string>("");
@@ -106,7 +106,7 @@ export default function ReplayFilters({
               <SelectItem value="none" className="cursor-pointer">
                 None
               </SelectItem>
-              {maps.map((map) => (
+              {map_names.map((map) => (
                 <SelectItem
                   key={map.id}
                   value={map.id}
@@ -138,7 +138,7 @@ export default function ReplayFilters({
               <SelectItem value="none" className="cursor-pointer">
                 None
               </SelectItem>
-              {match_modes.map((mode) => (
+              {map_modes.map((mode) => (
                 <SelectItem
                   key={mode.id}
                   value={mode.name}

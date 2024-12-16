@@ -29,12 +29,12 @@ export default async function DashboardTeamReplayPage() {
     console.error("Failed to fetch replays:", replaysError);
   }
 
-  const maps = _.uniqBy(replaysData, "map_name").map((replay) => ({
+  const map_names = _.uniqBy(replaysData, "map_name").map((replay) => ({
     id: replay.map_name,
     name: replay.map_name,
   }));
 
-  const match_modes = _.uniqBy(replaysData, "map_mode").map((replay) => ({
+  const map_modes = _.uniqBy(replaysData, "map_mode").map((replay) => ({
     id: replay.map_mode,
     name: replay.map_mode,
   }));
@@ -50,8 +50,8 @@ export default async function DashboardTeamReplayPage() {
       <UploadReplayScreenshot />
       <ReplayHistory
         replays={replaysData || []}
-        maps={maps}
-        match_modes={match_modes}
+        map_names={map_names}
+        map_modes={map_modes}
         profile={profile}
       />
     </div>

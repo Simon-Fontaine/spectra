@@ -20,12 +20,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { Database } from "@/lib/database.types";
+import { Input } from "@/components/ui/input";
 
 type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface EditDialogProps {
   replay: Replay;
-  maps: { id: string; name: string }[];
+  map_names: { id: string; name: string }[];
+  map_modes: { id: string; name: string }[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (updatedReplay: Partial<Replay>) => Promise<void>;
@@ -33,15 +35,19 @@ interface EditDialogProps {
 
 export default function ReplayEditDialog({
   replay,
-  maps,
+  map_names,
+  map_modes,
   open,
   onOpenChange,
   onSave,
 }: EditDialogProps) {
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    map_id: replay.map_name,
+    map_name: replay.map_name,
+    map_mode: replay.map_mode,
     result: replay.result,
+    score: replay.score || "",
     notes: replay.notes || "",
     is_reviewed: replay.is_reviewed,
   });
@@ -69,21 +75,25 @@ export default function ReplayEditDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          {/* Map Selection */}
           <div>
+            <label htmlFor="map-select" className="sr-only">
+              Map
+            </label>
             <Select
-              value={formData.map_id}
-              onValueChange={(value: Replay["map_name"]) =>
-                setFormData((prev) => ({ ...prev, map_id: value }))
+              value={formData.map_name}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, map_name: value }))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id="map-select">
                 <SelectValue placeholder="Select map">
-                  {formData.map_id}
+                  {formData.map_name}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {maps.map((map) => (
-                  <SelectItem key={map.id} value={map.id}>
+                {map_names.map((map) => (
+                  <SelectItem key={map.id} value={map.name}>
                     {map.name}
                   </SelectItem>
                 ))}
@@ -91,14 +101,47 @@ export default function ReplayEditDialog({
             </Select>
           </div>
 
+          {/* Match Mode Selection */}
           <div>
+            <label htmlFor="mode-select" className="sr-only">
+              Match Mode
+            </label>
             <Select
-              value={formData.result}
-              onValueChange={(value: Replay["result"]) =>
-                setFormData((prev) => ({ ...prev, result: value }))
+              value={formData.map_mode}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, map_mode: value }))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger id="mode-select">
+                <SelectValue placeholder="Select mode">
+                  {formData.map_mode}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {map_modes.map((mode) => (
+                  <SelectItem key={mode.id} value={mode.name}>
+                    {mode.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Result Selection */}
+          <div>
+            <label htmlFor="result-select" className="sr-only">
+              Result
+            </label>
+            <Select
+              value={formData.result}
+              onValueChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  result: value as "Victory" | "Defeat" | "Draw",
+                }))
+              }
+            >
+              <SelectTrigger id="result-select">
                 <SelectValue placeholder="Select result">
                   {formData.result}
                 </SelectValue>
@@ -111,8 +154,28 @@ export default function ReplayEditDialog({
             </Select>
           </div>
 
+          {/* Score Input */}
           <div>
+            <label htmlFor="score-input" className="sr-only">
+              Score (e.g. "2-1")
+            </label>
+            <Input
+              id="score-input"
+              placeholder="Score (e.g. 2-1)"
+              value={formData.score}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, score: e.target.value }))
+              }
+            />
+          </div>
+
+          {/* Notes Textarea */}
+          <div>
+            <label htmlFor="notes-textarea" className="sr-only">
+              Notes
+            </label>
             <Textarea
+              id="notes-textarea"
               placeholder="Add notes..."
               value={formData.notes}
               onChange={(e) =>
@@ -121,6 +184,7 @@ export default function ReplayEditDialog({
             />
           </div>
 
+          {/* Reviewed Checkbox */}
           <div className="flex items-center space-x-2">
             <input
               type="checkbox"
@@ -134,7 +198,9 @@ export default function ReplayEditDialog({
                 }))
               }
             />
-            <label htmlFor="is_reviewed">Mark as reviewed</label>
+            <label htmlFor="is_reviewed" className="text-sm">
+              Mark as reviewed
+            </label>
           </div>
         </div>
 
