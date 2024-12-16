@@ -10,6 +10,7 @@ import type { Profile } from "@/utils/profile";
 
 interface NavItem {
   title: string;
+  isActive?: boolean;
   url: string;
   icon: LucideIcon;
   items?: {
@@ -30,6 +31,7 @@ export function getDashboardConfig(profile: Profile): NavConfig {
     navMain: [
       {
         title: "Team",
+        isActive: true,
         url: "/dashboard/team",
         icon: Users2,
         items: [
@@ -46,6 +48,7 @@ export function getDashboardConfig(profile: Profile): NavConfig {
 
       {
         title: "Schedule",
+        isActive: true,
         url: "/dashboard/schedule",
         icon: CalendarDays,
         items: [
