@@ -7,7 +7,7 @@ import Redis from "ioredis";
 
 // ---- Configuration Constants ----
 const RATE_LIMIT_PER_USER = 10;
-const RATE_LIMIT_INTERVAL = 60 * 60; // 1 hour
+const RATE_LIMIT_INTERVAL = 60 * 60 * 24; // 24 hours
 const MAX_FILE_SIZE_MB = 10;
 
 const SYSTEM_PROMPT = `
