@@ -19,49 +19,26 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { Database } from "@/lib/database.types";
 
-interface GameMode {
-  name: string;
-}
-
-interface MapDetails {
-  id: string;
-  name: string;
-  game_mode: GameMode;
-}
-
-interface ReplayCode {
-  id: string;
-  code: string;
-  map_id: string;
-  map: MapDetails;
-  result: "Victory" | "Defeat" | "Draw";
-  notes: string | null;
-  is_reviewed: boolean;
-  uploaded_image_url: string | null;
-  created_at: string;
-  updated_at: string;
-  uploaded_by: string;
-}
+type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface EditDialogProps {
-  replay: ReplayCode;
-  maps: MapDetails[];
+  replay: Replay;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (updatedReplay: Partial<ReplayCode>) => Promise<void>;
+  onSave: (updatedReplay: Partial<Replay>) => Promise<void>;
 }
 
 export default function ReplayEditDialog({
   replay,
-  maps,
   open,
   onOpenChange,
   onSave,
 }: EditDialogProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    map_id: replay.map_id,
+    map_id: replay.map_name,
     result: replay.result,
     notes: replay.notes || "",
     is_reviewed: replay.is_reviewed,
@@ -93,21 +70,19 @@ export default function ReplayEditDialog({
           <div>
             <Select
               value={formData.map_id}
-              onValueChange={(value) =>
+              onValueChange={(value: Replay["map_name"]) =>
                 setFormData((prev) => ({ ...prev, map_id: value }))
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select map">
-                  {maps.find((m) => m.id === formData.map_id)?.name}
+                  {formData.map_id}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {maps.map((map) => (
-                  <SelectItem key={map.id} value={map.id}>
-                    {map.name} ({map.game_mode.name})
-                  </SelectItem>
-                ))}
+                <SelectItem value="Map 1">Map 1</SelectItem>
+                <SelectItem value="Map 2">Map 2</SelectItem>
+                <SelectItem value="Map 3">Map 3</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -115,7 +90,7 @@ export default function ReplayEditDialog({
           <div>
             <Select
               value={formData.result}
-              onValueChange={(value: ReplayCode["result"]) =>
+              onValueChange={(value: Replay["result"]) =>
                 setFormData((prev) => ({ ...prev, result: value }))
               }
             >

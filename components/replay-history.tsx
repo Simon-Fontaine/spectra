@@ -13,38 +13,16 @@ import ReplayFilters from "@/components/replay-filters";
 import { Profile } from "@/utils/profile";
 import { cn } from "@/lib/utils";
 import DeleteReplayButton from "./replay-delete-button";
+import { Database } from "@/lib/database.types";
 
-interface GameMode {
-  name: string;
-}
-
-interface MapDetails {
-  id: string;
-  name: string;
-  game_mode: GameMode;
-}
-
-interface ReplayCode {
-  id: string;
-  code: string;
-  map_id: string;
-  map: MapDetails;
-  result: "Victory" | "Defeat" | "Draw";
-  notes: string | null;
-  is_reviewed: boolean;
-  uploaded_image_url: string | null;
-  created_at: string;
-  updated_at: string;
-  uploaded_by: string;
-}
+type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface ReplayHistoryProps {
-  replays: ReplayCode[];
-  maps: MapDetails[];
+  replays: Replay[];
   profile: Profile;
 }
 
-function groupReplaysByDateAndTime(replays: ReplayCode[]) {
+function groupReplaysByDateAndTime(replays: Replay[]) {
   // Map replays to include Date objects
   const replayData = replays.map((replay) => {
     const fullDate = new Date(replay.created_at);
@@ -80,7 +58,7 @@ function groupReplaysByDateAndTime(replays: ReplayCode[]) {
   // Prepare the grouped data
   const groupedData = Array.from(dateMap.entries()).map(([date, replays]) => {
     // Group by time
-    const timeMap = new Map<string, ReplayCode[]>();
+    const timeMap = new Map<string, Replay[]>();
 
     replays.forEach(({ timeKey, replay }) => {
       if (!timeMap.has(timeKey)) {
@@ -114,12 +92,11 @@ function groupReplaysByDateAndTime(replays: ReplayCode[]) {
 
 export default function ReplayHistory({
   replays,
-  maps,
   profile,
 }: ReplayHistoryProps) {
-  const [editingReplay, setEditingReplay] = useState<ReplayCode | null>(null);
+  const [editingReplay, setEditingReplay] = useState<Replay | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [filteredReplays, setFilteredReplays] = useState<ReplayCode[]>(replays);
+  const [filteredReplays, setFilteredReplays] = useState<Replay[]>(replays);
   const { toast } = useToast();
   const router = useRouter();
   const supabase = createClient();
@@ -130,13 +107,10 @@ export default function ReplayHistory({
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleUpdate = async (
-    replayId: string,
-    updates: Partial<ReplayCode>
-  ) => {
+  const handleUpdate = async (replayId: string, updates: Partial<Replay>) => {
     try {
       const { error } = await supabase
-        .from("replay_codes")
+        .from("replays")
         .update(updates)
         .eq("id", replayId);
 
@@ -159,7 +133,7 @@ export default function ReplayHistory({
     }
   };
 
-  const getResultColor = (result: ReplayCode["result"]) => {
+  const getResultColor = (result: Replay["result"]) => {
     switch (result) {
       case "Victory":
         return "bg-green-500/20 text-green-700 dark:text-green-300";
@@ -174,11 +148,7 @@ export default function ReplayHistory({
 
   return (
     <div className="flex flex-col gap-4">
-      <ReplayFilters
-        replays={replays}
-        maps={maps}
-        onFilterChange={setFilteredReplays}
-      />
+      <ReplayFilters replays={replays} onFilterChange={setFilteredReplays} />
 
       {groupedReplays.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -223,13 +193,13 @@ export default function ReplayHistory({
                                 variant="outline"
                                 className="bg-purple-500/20 text-purple-700 dark:text-purple-300 whitespace-nowrap"
                               >
-                                {replay.map.name}
+                                {replay.map_name}
                               </Badge>
                               <Badge
                                 variant="outline"
                                 className="whitespace-nowrap"
                               >
-                                {replay.map.game_mode.name}
+                                {replay.map_mode}
                               </Badge>
                               <Badge
                                 variant="outline"
@@ -286,13 +256,13 @@ export default function ReplayHistory({
                               variant="outline"
                               className="bg-purple-500/20 text-purple-700 dark:text-purple-300 whitespace-nowrap"
                             >
-                              {replay.map.name}
+                              {replay.map_name}
                             </Badge>
                             <Badge
                               variant="outline"
                               className="whitespace-nowrap"
                             >
-                              {replay.map.game_mode.name}
+                              {replay.map_mode}
                             </Badge>
                             <Badge
                               variant="outline"
@@ -377,7 +347,6 @@ export default function ReplayHistory({
       {editingReplay && (
         <ReplayEditDialog
           replay={editingReplay}
-          maps={maps}
           open={!!editingReplay}
           onOpenChange={(open) => !open && setEditingReplay(null)}
           onSave={(updates) => handleUpdate(editingReplay.id, updates)}

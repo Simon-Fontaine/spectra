@@ -7,12 +7,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { createClient } from "@/utils/supabase/client";
 
 export default function UploadReplayScreenshot() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  const supabase = createClient();
 
   const MAX_FILE_SIZE_MB = 10;
 
@@ -30,16 +33,38 @@ export default function UploadReplayScreenshot() {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("image", file);
-
       setLoading(true);
       setError(null);
 
       try {
+        // Upload the file to Supabase storage
+        const filePath = `replays/${crypto.randomUUID()}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("images")
+          .upload(filePath, file, {
+            upsert: true,
+            contentType: file.type,
+          });
+
+        if (uploadError || !uploadData) {
+          throw new Error("Failed to upload file to storage");
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("images").getPublicUrl(filePath);
+
+        if (!publicUrl) {
+          throw new Error("Failed to generate public URL");
+        }
+
+        // Now send the public URL to the API route
         const response = await fetch("/api/extract-codes", {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: publicUrl }),
         });
 
         const { replays, error } = await response.json();
@@ -64,7 +89,7 @@ export default function UploadReplayScreenshot() {
         setLoading(false);
       }
     },
-    [router, toast]
+    [router, toast, supabase]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

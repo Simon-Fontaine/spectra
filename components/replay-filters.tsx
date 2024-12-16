@@ -10,40 +10,17 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { Database } from "@/lib/database.types";
 
-interface GameMode {
-  name: string;
-}
-
-interface MapDetails {
-  id: string;
-  name: string;
-  game_mode: GameMode;
-}
-
-interface ReplayCode {
-  id: string;
-  code: string;
-  map_id: string;
-  map: MapDetails;
-  result: "Victory" | "Defeat" | "Draw";
-  notes: string | null;
-  is_reviewed: boolean;
-  uploaded_image_url: string | null;
-  created_at: string;
-  updated_at: string;
-  uploaded_by: string;
-}
+type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
 interface ReplayFiltersProps {
-  replays: ReplayCode[];
-  maps: MapDetails[];
-  onFilterChange: (filteredReplays: ReplayCode[]) => void;
+  replays: Replay[];
+  onFilterChange: (filteredReplays: Replay[]) => void;
 }
 
 export default function ReplayFilters({
   replays,
-  maps,
   onFilterChange,
 }: ReplayFiltersProps) {
   const [selectedMap, setSelectedMap] = React.useState<string>("");
@@ -51,20 +28,25 @@ export default function ReplayFilters({
   const [selectedStatus, setSelectedStatus] = React.useState<string>("");
 
   const gameModes = React.useMemo(() => {
-    return _.uniqBy(maps, "game_mode.name").map((map) => map.game_mode.name);
-  }, [maps]);
+    return _.uniqBy(replays, "map_mode").map((replay) => replay.map_mode);
+  }, [replays]);
+
+  const maps = React.useMemo(() => {
+    return _.uniqBy(replays, "map_name").map((replay) => ({
+      id: replay.map_name,
+      name: replay.map_name,
+    }));
+  }, [replays]);
 
   const filterReplays = React.useCallback(() => {
     let filtered = [...replays];
 
     if (selectedMap) {
-      filtered = filtered.filter((replay) => replay.map.id === selectedMap);
+      filtered = filtered.filter((replay) => replay.map_name === selectedMap);
     }
 
     if (selectedMode) {
-      filtered = filtered.filter(
-        (replay) => replay.map.game_mode.name === selectedMode
-      );
+      filtered = filtered.filter((replay) => replay.map_mode === selectedMode);
     }
 
     if (selectedStatus) {
