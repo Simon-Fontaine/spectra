@@ -46,6 +46,7 @@
     "prettier": "^3.3.3",
     "rate-limiter-flexible": "^5.0.4",
     "react": "18.3.1",
+    "react-avatar-edit": "^1.2.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "18.3.1",
     "react-dropzone": "^14.3.5",

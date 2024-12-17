@@ -10,8 +10,8 @@ import type { Profile } from "@/utils/profile";
 
 interface NavItem {
   title: string;
-  isActive?: boolean;
   url: string;
+  isActive?: boolean;
   icon: LucideIcon;
   items?: {
     title: string;
@@ -24,15 +24,19 @@ interface NavConfig {
   navSecondary: NavItem[];
 }
 
-export function getDashboardConfig(profile: Profile): NavConfig {
+export function getDashboardConfig(
+  profile: Profile,
+  pathname: string
+): NavConfig {
   const isAdmin = profile.app_role === "admin";
+  const isActive = (url: string) => pathname.startsWith(url);
 
   return {
     navMain: [
       {
         title: "Team",
-        isActive: true,
         url: "/dashboard/team",
+        isActive: isActive("/dashboard/team"),
         icon: Users2,
         items: [
           {
@@ -48,8 +52,8 @@ export function getDashboardConfig(profile: Profile): NavConfig {
 
       {
         title: "Schedule",
-        isActive: true,
         url: "/dashboard/schedule",
+        isActive: isActive("/dashboard/schedule"),
         icon: CalendarDays,
         items: [
           {
@@ -72,6 +76,7 @@ export function getDashboardConfig(profile: Profile): NavConfig {
             {
               title: "Admin",
               url: "/dashboard/admin",
+              isActive: isActive("/dashboard/admin"),
               icon: Shield,
               items: [
                 {
@@ -93,6 +98,7 @@ export function getDashboardConfig(profile: Profile): NavConfig {
       {
         title: "Profile",
         url: "/dashboard/profile",
+        isActive: isActive("/dashboard/profile"),
         icon: UserCog,
         items: [
           {

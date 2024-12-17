@@ -171,6 +171,7 @@ export type Database = {
           app_role: Database["public"]["Enums"]["app_role"]
           avatar_url: string | null
           created_at: string
+          display_name: string | null
           id: string
           is_substitute: boolean
           onboarding_completed: boolean
@@ -182,6 +183,7 @@ export type Database = {
           app_role?: Database["public"]["Enums"]["app_role"]
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
           is_substitute?: boolean
           onboarding_completed?: boolean
@@ -193,6 +195,7 @@ export type Database = {
           app_role?: Database["public"]["Enums"]["app_role"]
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
           is_substitute?: boolean
           onboarding_completed?: boolean
@@ -295,6 +298,7 @@ export type Database = {
           app_role: Database["public"]["Enums"]["app_role"]
           avatar_url: string | null
           created_at: string
+          display_name: string | null
           id: string
           is_substitute: boolean
           onboarding_completed: boolean

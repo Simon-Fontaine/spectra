@@ -5,6 +5,9 @@ const nextConfig = {
       {
         hostname: "yoalsjcbliklnmqvbsdy.supabase.co",
       },
+      {
+        hostname: "cdn.discordapp.com",
+      },
     ],
   },
 };

@@ -205,7 +205,11 @@ export default function ReplayEditDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button
+            className="mt-2 sm:mt-0"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={loading}>

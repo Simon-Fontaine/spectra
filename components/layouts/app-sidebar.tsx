@@ -18,6 +18,7 @@ import { siteConfig } from "@/config/site";
 import { User } from "@supabase/supabase-js";
 import { Profile } from "@/utils/profile";
 import { getDashboardConfig } from "@/config/dashboard";
+import { usePathname } from "next/navigation";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: User | null;
@@ -27,7 +28,8 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ user, profile, ...props }: AppSidebarProps) {
   if (!user || !profile) return null;
 
-  const dashboardConfig = getDashboardConfig(profile);
+  const pathname = usePathname();
+  const dashboardConfig = getDashboardConfig(profile, pathname);
 
   return (
     <Sidebar variant="inset" {...props}>
