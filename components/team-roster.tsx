@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 interface RosterMember {
   id: string;
   username: string;
+  display_name: string | null;
   avatar_url: string | null;
   ow_role:
     | "main_tank"
@@ -145,7 +146,7 @@ export function TeamRoster({ members }: RosterProps) {
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium leading-none">
-                        {player.username}
+                        {player.display_name || player.username}
                       </p>
                       {player.app_role === "admin" && (
                         <Badge variant="secondary" className="text-xs">

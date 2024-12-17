@@ -39,7 +39,7 @@ export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
       const { error } = await supabase
         .from("profile")
         .update({
-          display_name,
+          display_name: display_name || null,
           username,
           avatar_url,
         })
@@ -127,6 +127,7 @@ export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
             placeholder="Enter your display name"
             value={display_name || ""}
             onChange={(e) => setDisplayName(e.target.value)}
+            className="max-w-sm"
           />
         </CardContent>
         <CardFooter className="flex justify-between border-t py-3">
@@ -156,17 +157,19 @@ export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
               This is your URL namespace within the app.
             </p>
           </div>
-          <div className="flex items-center">
-            <span className="text-muted-foreground">
-              {siteConfig.url.replace(/https?:\/\//g, "")}/profile/
-            </span>
+          <div className="inline-flex w-full max-w-sm">
+            <div className="bg-muted text-muted-foreground border border-muted rounded-l-md flex items-center px-3">
+              <span className="text-sm font-medium">
+                {siteConfig.url.replace(/https?:\/\//g, "")}/players/
+              </span>
+            </div>
             <Input
               id="username"
               type="text"
               placeholder="your-username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="ml-2"
+              className="rounded-none rounded-r-md"
             />
           </div>
         </CardContent>

@@ -16,7 +16,9 @@ export default async function TeamRosterPage() {
 
   const { data: members, error } = await supabase
     .from("profile")
-    .select("id, username, avatar_url, ow_role, is_substitute, app_role")
+    .select(
+      "id, username, display_name, avatar_url, ow_role, is_substitute, app_role"
+    )
     .order("username");
 
   if (error) {

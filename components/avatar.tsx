@@ -1,41 +1,103 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
+import Cropper from "react-easy-crop";
+import { getCroppedImg } from "@/utils/getCroppedImg";
+import { Slider } from "./ui/slider";
+import { Loader2 } from "lucide-react";
 
-export default function Avatar({
-  uid,
-  url,
-  size,
-  onUpload,
-}: {
+type AvatarProps = {
   uid: string | null;
   url: string | null;
   size: number;
   onUpload: (url: string) => void;
-}) {
+};
+
+interface CroppedArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface CroppedAreaPixels {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export default function Avatar({ uid, url, size, onUpload }: AvatarProps) {
   const supabase = createClient();
   const [uploading, setUploading] = useState(false);
+  const [open, setOpen] = useState(false); // For the dialog
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] =
+    useState<CroppedAreaPixels | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (
+  const onCropComplete = useCallback(
+    (croppedArea: CroppedArea, croppedAreaPx: CroppedAreaPixels) => {
+      setCroppedAreaPixels(croppedAreaPx);
+    },
+    []
+  );
+
+  const handleFileSelect: React.ChangeEventHandler<HTMLInputElement> = async (
     event
   ) => {
-    try {
-      setUploading(true);
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
 
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error("You must select an image to upload.");
+    const file = event.target.files[0];
+    setSelectedFile(file);
+
+    // Create a preview URL
+    const fileReader = new FileReader();
+    fileReader.onload = () => {
+      if (fileReader.result) {
+        setPreviewUrl(fileReader.result as string);
+        setOpen(true);
+      }
+    };
+    fileReader.readAsDataURL(file);
+  };
+
+  const handleUpload = async () => {
+    if (!uid || !selectedFile || !croppedAreaPixels) return;
+
+    setUploading(true);
+    try {
+      const croppedImageBlob = await getCroppedImg(
+        previewUrl!,
+        croppedAreaPixels
+      );
+
+      if (!croppedImageBlob) {
+        throw new Error("Failed to crop image.");
       }
 
-      const file = event.target.files[0];
-      const fileExt = file.name.split(".").pop();
+      const fileExt = selectedFile.name.split(".").pop();
       const filePath = `${uid}-${Math.random()}.${fileExt}`;
-
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file);
+        .upload(filePath, croppedImageBlob);
 
       if (uploadError) {
         throw uploadError;
@@ -46,47 +108,138 @@ export default function Avatar({
       } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
       onUpload(publicUrl);
+
+      if (url && url !== publicUrl) {
+        const oldFileName = url.split("/avatars/")[1];
+        if (oldFileName) {
+          await supabase.storage.from("avatars").remove([oldFileName]);
+        }
+      }
+
+      setOpen(false);
     } catch (error) {
       alert("Error uploading avatar!");
     } finally {
       setUploading(false);
+      setSelectedFile(null);
+      setPreviewUrl(null);
     }
   };
 
   return (
-    <div>
-      {url ? (
-        <Label htmlFor="avatar">
-          <Input
-            id="avatar"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={uploadAvatar}
-            disabled={uploading}
-          />
-          <Image
-            width={size}
-            height={size}
-            src={url}
-            alt="Avatar"
-            className="rounded-full cursor-pointer"
-          />
-        </Label>
-      ) : (
-        <>
-          <Label htmlFor="avatar" className="sr-only">
-            Avatar
-          </Label>
-          <Input
-            id="avatar"
-            type="file"
-            disabled={uploading}
-            accept="image/*"
-            onChange={uploadAvatar}
-          />
-        </>
-      )}
-    </div>
+    <>
+      <div>
+        {url ? (
+          <>
+            <Label htmlFor="avatar-input" className="sr-only">
+              Choose a new avatar
+            </Label>
+            <Input
+              id="avatar-input"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileSelect}
+              disabled={uploading}
+              aria-label="Select a new avatar to upload"
+            />
+            <Image
+              width={size}
+              height={size}
+              src={url}
+              alt="Your current avatar"
+              className="rounded-full cursor-pointer"
+              onClick={() => {
+                const input = document.getElementById("avatar-input");
+                if (input) {
+                  input.click();
+                }
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <Label htmlFor="avatar-input">Choose an avatar:</Label>
+            <Input
+              id="avatar-input"
+              type="file"
+              disabled={uploading}
+              accept="image/*"
+              onChange={handleFileSelect}
+              aria-label="Select an avatar image to upload"
+            />
+          </>
+        )}
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          className="max-w-lg"
+          aria-busy={uploading ? "true" : "false"}
+        >
+          <DialogHeader>
+            <DialogTitle>Crop your avatar</DialogTitle>
+            <DialogDescription>
+              Use the slider and drag your image to crop your avatar into a
+              square. When you are done, press the "Save changes" button.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div
+            className="relative w-full h-64 bg-black"
+            aria-label="Image cropping area"
+            role="region"
+          >
+            {previewUrl && (
+              <Cropper
+                image={previewUrl}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+                restrictPosition={false}
+                showGrid={false}
+              />
+            )}
+          </div>
+
+          <div className="flex justify-between items-center mt-4">
+            <Label htmlFor="avatar-zoom" className="sr-only">
+              Zoom level
+            </Label>
+            <Slider
+              id="avatar-zoom"
+              aria-label="Zoom level"
+              min={1}
+              max={3}
+              step={0.1}
+              value={[zoom]}
+              onValueChange={(value) => setZoom(value[0])}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              className="mt-2 sm:mt-0"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              aria-label="Cancel and close the crop dialog"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpload}
+              disabled={uploading}
+              aria-label="Save cropped avatar"
+            >
+              {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {uploading ? "Saving changes..." : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
