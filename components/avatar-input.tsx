@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import Image from "next/image";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
@@ -18,10 +17,13 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/utils/getCroppedImg";
 import { Slider } from "./ui/slider";
 import { Loader2 } from "lucide-react";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { AvatarImage } from "@radix-ui/react-avatar";
 
 type AvatarProps = {
   uid: string | null;
   url: string | null;
+  username: string;
   size: number;
   onUpload: (url: string) => void;
 };
@@ -40,7 +42,13 @@ interface CroppedAreaPixels {
   height: number;
 }
 
-export default function Avatar({ uid, url, size, onUpload }: AvatarProps) {
+export default function AvatarInput({
+  uid,
+  url,
+  username,
+  size,
+  onUpload,
+}: AvatarProps) {
   const supabase = createClient();
   const [uploading, setUploading] = useState(false);
   const [open, setOpen] = useState(false); // For the dialog
@@ -129,47 +137,32 @@ export default function Avatar({ uid, url, size, onUpload }: AvatarProps) {
   return (
     <>
       <div>
-        {url ? (
-          <>
-            <Label htmlFor="avatar-input" className="sr-only">
-              Choose a new avatar
-            </Label>
-            <Input
-              id="avatar-input"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileSelect}
-              disabled={uploading}
-              aria-label="Select a new avatar to upload"
-            />
-            <Image
-              width={size}
-              height={size}
-              src={url}
-              alt="Your current avatar"
-              className="rounded-full cursor-pointer"
-              onClick={() => {
-                const input = document.getElementById("avatar-input");
-                if (input) {
-                  input.click();
-                }
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <Label htmlFor="avatar-input">Choose an avatar:</Label>
-            <Input
-              id="avatar-input"
-              type="file"
-              disabled={uploading}
-              accept="image/*"
-              onChange={handleFileSelect}
-              aria-label="Select an avatar image to upload"
-            />
-          </>
-        )}
+        <Label htmlFor="avatar-input" className="sr-only">
+          Choose a new avatar
+        </Label>
+        <Input
+          id="avatar-input"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+          disabled={uploading}
+          aria-label="Select a new avatar to upload"
+        />
+        <Avatar
+          className="rounded-lg h-20 w-20 cursor-pointer"
+          onClick={() => {
+            const input = document.getElementById("avatar-input");
+            if (input) {
+              input.click();
+            }
+          }}
+        >
+          <AvatarImage src={url || undefined} alt="Your current avatar" />
+          <AvatarFallback className="rounded-lg">
+            {username.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

@@ -9,7 +9,7 @@ import { PageHeaderHeading } from "@/components/page-header";
 import { siteConfig } from "@/config/site";
 import { Database } from "@/lib/database.types";
 import { createClient } from "@/utils/supabase/client";
-import Avatar from "./avatar";
+import AvatarInput from "./avatar-input";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProfileSettingsProps {
@@ -95,10 +95,11 @@ export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
               </p>
             </div>
           </div>
-          <div>
-            <Avatar
+          <div className="pl-4">
+            <AvatarInput
               uid={profile.id}
               url={avatar_url}
+              username={profile.username}
               size={80}
               onUpload={(url) => {
                 setAvatarUrl(url);

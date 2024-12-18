@@ -7,12 +7,14 @@ import { redirect } from "next/navigation";
 
 function validateOnboardingForm(
   username: string,
+  display_name: string,
   password: string,
   confirmPassword: string,
   ow_role: string
 ) {
   if (
     !username?.trim() ||
+    !display_name?.trim() ||
     !password?.trim() ||
     !confirmPassword?.trim() ||
     !ow_role
@@ -27,13 +29,20 @@ function validateOnboardingForm(
 export async function createOnboardingAction(formData: FormData) {
   const supabase = await createClient();
 
-  const username = formData.get("username") as string;
+  const username = (formData.get("username") as string).toLowerCase();
+  const display_name = formData.get("display_name") as string;
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
   const ow_role = formData.get("ow_role") as Profile["ow_role"];
 
   try {
-    validateOnboardingForm(username, password, confirmPassword, ow_role);
+    validateOnboardingForm(
+      username,
+      display_name,
+      password,
+      confirmPassword,
+      ow_role
+    );
 
     const { data: existingUser } = await supabase
       .from("profile")
@@ -54,6 +63,7 @@ export async function createOnboardingAction(formData: FormData) {
 
     const { error: profileError } = await supabase.from("profile").insert({
       username,
+      display_name,
       ow_role,
       onboarding_completed: true,
     });

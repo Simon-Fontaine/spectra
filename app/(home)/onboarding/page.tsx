@@ -53,6 +53,21 @@ export default async function OnboardingPage(props: {
               name="username"
               placeholder="Enter your username"
               required
+              pattern="^[a-z0-9_]{1,48}$"
+              title="Lowercase letters, numbers, and underscores only (1-48 characters)"
+            />
+            <p className="text-sm text-muted-foreground">
+              Lowercase letters, numbers, and underscores only (1-48 characters)
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="display_name">Display Name</Label>
+            <Input
+              id="display_name"
+              name="display_name"
+              placeholder="Enter your display name"
+              required
               pattern="^[a-zA-Z0-9_]{1,32}$"
               title="Letters, numbers, and underscores only (1-32 characters)"
             />

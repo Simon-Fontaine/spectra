@@ -137,10 +137,10 @@ export function TeamRoster({ members }: RosterProps) {
                   key={player.id}
                   className="flex items-center gap-4 rounded-lg border p-3"
                 >
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-10 w-10 rounded-lg">
                     <AvatarImage src={player.avatar_url || undefined} />
-                    <AvatarFallback>
-                      <User2Icon className="h-4 w-4" />
+                    <AvatarFallback className="rounded-lg">
+                      {player.username.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-1">

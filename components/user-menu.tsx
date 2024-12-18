@@ -46,7 +46,9 @@ interface UserInfoProps {
 
 const UserInfo = ({ profile, email, className }: UserInfoProps) => (
   <div className={cn("grid flex-1 text-left text-sm leading-tight", className)}>
-    <span className="truncate font-semibold">{profile.username}</span>
+    <span className="truncate font-semibold">
+      {profile.display_name || profile.username}
+    </span>
     <span className="truncate text-xs text-muted-foreground">{email}</span>
   </div>
 );
