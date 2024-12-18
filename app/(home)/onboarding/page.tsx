@@ -4,7 +4,7 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
-import { FormMessage, Message } from "@/components/form-message";
+import { NotificationAlert, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,7 @@ export default async function OnboardingPage(props: {
 
       <div className="container py-6 mx-auto max-w-xl">
         <form className="flex flex-col gap-2" action={createOnboardingAction}>
-          <FormMessage message={searchParams} />
+          <NotificationAlert message={searchParams} />
 
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>

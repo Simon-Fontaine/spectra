@@ -1,7 +1,7 @@
 import { signInAction } from "@/app/(auth)/actions";
 import AuthFooter from "@/components/auth-footer";
 import AuthHeader from "@/components/auth-header";
-import { FormMessage, Message } from "@/components/form-message";
+import { NotificationAlert, Message } from "@/components/form-message";
 import NavigationButtons from "@/components/navigation-buttons";
 import PasswordInput from "@/components/password-input";
 import { SubmitButton } from "@/components/submit-button";
@@ -47,7 +47,7 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
             Sign in
           </SubmitButton>
         </form>
-        <FormMessage message={searchParams} />
+        <NotificationAlert message={searchParams} />
         <AuthFooter
           links={[
             { name: "Lost your password? Reset it", href: "/forgot-password" },

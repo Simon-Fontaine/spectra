@@ -30,7 +30,6 @@ export default function PasswordInput({
           name={name}
           type={showPassword ? "text" : "password"}
           placeholder={placeholder}
-          required
           className="pr-10"
           {...props}
         />

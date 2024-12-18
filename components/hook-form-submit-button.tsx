@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import { type ComponentProps } from "react";
-import { useFormStatus } from "react-dom";
+import { useFormState } from "react-hook-form";
 
 type Props = ComponentProps<typeof Button> & {
   pendingText?: string;
@@ -14,12 +14,12 @@ export function SubmitButton({
   pendingText = "Submitting...",
   ...props
 }: Props) {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
 
   return (
-    <Button type="submit" disabled={pending} {...props}>
-      {pending ? <Icons.spinner className="h-4 w-4 animate-spin" /> : null}
-      {pending ? pendingText : children}
+    <Button type="submit" disabled={isSubmitting} {...props}>
+      {isSubmitting ? <Icons.spinner className="h-4 w-4 animate-spin" /> : null}
+      {isSubmitting ? pendingText : children}
     </Button>
   );
 }

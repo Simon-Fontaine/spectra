@@ -1,7 +1,7 @@
 import { forgotPasswordAction } from "@/app/(auth)/actions";
 import AuthFooter from "@/components/auth-footer";
 import AuthHeader from "@/components/auth-header";
-import { FormMessage, Message } from "@/components/form-message";
+import { NotificationAlert, Message } from "@/components/form-message";
 import NavigationButtons from "@/components/navigation-buttons";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,7 @@ export default async function ForgotPassword(props: {
             Send Reset Link
           </SubmitButton>
         </form>
-        <FormMessage message={searchParams} />
+        <NotificationAlert message={searchParams} />
         <AuthFooter
           links={[{ name: "Found your password? Sign in", href: "/sign-in" }]}
         />

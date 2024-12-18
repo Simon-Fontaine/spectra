@@ -24,7 +24,8 @@ type AvatarProps = {
   uid: string | null;
   url: string | null;
   username: string;
-  size: number;
+  setUploading: (uploading: boolean) => void;
+  uploading: boolean;
   onUpload: (url: string) => void;
 };
 
@@ -46,12 +47,12 @@ export default function AvatarInput({
   uid,
   url,
   username,
-  size,
+  setUploading,
+  uploading,
   onUpload,
 }: AvatarProps) {
   const supabase = createClient();
-  const [uploading, setUploading] = useState(false);
-  const [open, setOpen] = useState(false); // For the dialog
+  const [open, setOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);

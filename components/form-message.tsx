@@ -6,7 +6,7 @@ export type Message =
   | { error: string }
   | { message: string };
 
-export function FormMessage({ message }: { message: Message }) {
+export function NotificationAlert({ message }: { message: Message }) {
   return (
     <>
       {"success" in message && (

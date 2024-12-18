@@ -1,18 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Profile } from "@/utils/profile";
+import { User } from "@supabase/supabase-js";
+import { NotificationAlert, Message } from "@/components/form-message";
 import { PageHeaderHeading } from "@/components/page-header";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import AvatarInput from "@/components/avatar-input";
+import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
-import { Database } from "@/lib/database.types";
-import { createClient } from "@/utils/supabase/client";
-import AvatarInput from "./avatar-input";
-import { useToast } from "@/hooks/use-toast";
 import PasswordInput from "./password-input";
-import { FormMessage, Message } from "./form-message";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,16 +31,83 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
-import { useRouter } from "next/navigation";
 import { Icons } from "./icons";
-import { User } from "@supabase/supabase-js";
+import { ComponentProps, useState } from "react";
+import { SubmitButton } from "./hook-form-submit-button";
+import { createClient } from "@/utils/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface ProfileSettingsProps {
-  profile: Database["public"]["Tables"]["profile"]["Row"];
+  profile: Profile;
   user: User;
   message: Message;
+}
+
+const usernameSchema = z.object({
+  username: z
+    .string()
+    .regex(
+      /^[a-z0-9_]{1,48}$/,
+      "Username must be lowercase and contain only letters, numbers, and underscores"
+    ),
+});
+
+const displayNameSchema = z.object({
+  display_name: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_ ]{0,32}$/,
+      "Display name must contain only letters, numbers, underscores, and spaces"
+    ),
+});
+
+const emailSchema = z.object({
+  email: z
+    .string()
+    .email("Email must be a valid email address (e.g. username@owspectra.com)"),
+});
+
+const passwordSchema = z
+  .object({
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z.string(),
+  })
+  .superRefine(({ confirmPassword, password }, ctx) => {
+    if (confirmPassword !== password) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Passwords do not match",
+        path: ["password"],
+      });
+      ctx.addIssue({
+        code: "custom",
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+      });
+    }
+  });
+
+type Props = ComponentProps<typeof Button> & {
+  pendingText?: string;
+  pending?: boolean;
+};
+
+function ActionButton({
+  children,
+  onClick = () => {},
+  pending = false,
+  pendingText = "Submitting...",
+  variant = "destructive",
+}: Props) {
+  return (
+    <Button size="sm" onClick={onClick} disabled={pending} variant={variant}>
+      {pending ? <Icons.spinner className="h-4 w-4 animate-spin" /> : null}
+      {pending ? pendingText : children}
+    </Button>
+  );
 }
 
 function handleErrorToast(toast: any, error: unknown) {
@@ -47,180 +123,176 @@ function handleErrorToast(toast: any, error: unknown) {
   });
 }
 
-// Reusable button component
-function ActionButton({
-  loading,
-  onClick,
-  label,
-  loadingLabel,
-  variant = "default",
-}: {
-  loading: boolean;
-  onClick: () => void;
-  label: string;
-  loadingLabel?: string;
-  variant?:
-    | "destructive"
-    | "secondary"
-    | "outline"
-    | "ghost"
-    | "default"
-    | "link";
-}) {
-  return (
-    <Button size="sm" onClick={onClick} disabled={loading} variant={variant}>
-      {loading ? <Icons.spinner className="h-4 w-4 animate-spin" /> : null}
-      {loading ? (loadingLabel ?? label) : label}
-    </Button>
-  );
-}
-
 export default function ProfileSettingsPage({
   profile,
   user,
   message,
 }: ProfileSettingsProps) {
   const supabase = createClient();
-  const router = useRouter();
+
   const { toast } = useToast();
+  const router = useRouter();
 
-  const [display_name, setDisplayName] = useState(profile.display_name);
-  const [username, setUsername] = useState(profile.username);
-  const [avatar_url, setAvatarUrl] = useState(profile.avatar_url);
-  const [email, setEmail] = useState(user.email);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [profileUpdateLoading, setProfileUpdateLoading] = useState(false);
-  const [passwordUpdateLoading, setPasswordUpdateLoading] = useState(false);
-  const [emailUpdateLoading, setEmailUpdateLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [accountDeleteLoading, setAccountDeleteLoading] = useState(false);
 
-  const [profileError, setProfileError] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const usernameForm = useForm<z.infer<typeof usernameSchema>>({
+    resolver: zodResolver(usernameSchema),
+    defaultValues: {
+      username: profile.username,
+    },
+  });
 
-  async function updateProfile({
-    display_name,
-    username,
-    avatar_url,
-  }: {
-    display_name: string | null;
-    username: string;
-    avatar_url: string | null;
-  }) {
-    setProfileError("");
+  const displayNameForm = useForm<z.infer<typeof displayNameSchema>>({
+    resolver: zodResolver(displayNameSchema),
+    defaultValues: {
+      display_name: profile.display_name ?? "",
+    },
+  });
+
+  const emailForm = useForm<z.infer<typeof emailSchema>>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: {
+      email: user.email,
+    },
+  });
+
+  const passwordForm = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  async function handleAvatarUpload(url: string) {
     try {
-      setProfileUpdateLoading(true);
-
-      if (!username || username.trim().length === 0) {
-        setProfileError("Username cannot be empty.");
-        return;
-      }
-
-      if (profile.username !== username) {
-        const { data: existingUser, error: checkError } = await supabase
-          .from("profile")
-          .select("id")
-          .eq("username", username)
-          .maybeSingle();
-
-        if (checkError) throw checkError;
-        if (existingUser) {
-          setProfileError("Username is already taken.");
-          return;
-        }
-      }
+      setUploading(true);
 
       const { error } = await supabase
         .from("profile")
-        .update({
-          display_name: display_name || null,
-          username,
-          avatar_url,
-        })
+        .update({ avatar_url: url })
         .eq("id", profile.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
+      profile.avatar_url = url;
 
       toast({
         title: "Success!",
-        description: "Profile updated successfully.",
+        description: "Avatar updated successfully.",
       });
     } catch (error) {
-      console.error("Failed to update profile:", error);
       handleErrorToast(toast, error);
     } finally {
-      setProfileUpdateLoading(false);
+      setUploading(false);
     }
   }
 
-  async function updateEmail({ email }: { email: string | undefined }) {
-    setEmailError("");
-    try {
-      setEmailUpdateLoading(true);
+  async function handleUsernameSubmit(data: z.infer<typeof usernameSchema>) {
+    const username = data.username;
 
-      if (!email || !email.includes("@")) {
-        setEmailError("Please enter a valid email address.");
-        return;
-      }
-
-      if (email === user.email) {
-        setEmailError("This email is already in use.");
-        return;
-      }
-
-      const { error } = await supabase.auth.updateUser({ email });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "A verification email has been sent to your new email.",
-      });
-    } catch (error) {
-      console.error("Failed to update email:", error);
-      handleErrorToast(toast, error);
-    } finally {
-      setEmailUpdateLoading(false);
+    if (username === profile.username) {
+      return;
     }
+
+    const { data: existingUser, error: checkError } = await supabase
+      .from("profile")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+    if (existingUser) {
+      handleErrorToast(toast, new Error("Username is already taken"));
+      return;
+    }
+
+    const { error } = await supabase
+      .from("profile")
+      .update({ username })
+      .eq("id", profile.id);
+
+    if (error) {
+      handleErrorToast(toast, error);
+      return;
+    }
+
+    profile.username = username;
+    toast({
+      title: "Success!",
+      description: "Username updated successfully.",
+    });
   }
 
-  async function updatePassword({
-    password,
-    confirmPassword,
-  }: {
-    password: string;
-    confirmPassword: string;
-  }) {
-    setPasswordError("");
-    try {
-      setPasswordUpdateLoading(true);
+  async function handleDisplayNameSubmit(
+    data: z.infer<typeof displayNameSchema>
+  ) {
+    const display_name = data.display_name;
 
-      if (password !== confirmPassword) {
-        setPasswordError("Passwords do not match.");
-        return;
-      }
-
-      const { error: passwordError } = await supabase.auth.updateUser({
-        password,
-      });
-
-      if (passwordError) throw passwordError;
-
-      toast({
-        title: "Success!",
-        description: "Password updated successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to update password:", error);
-      handleErrorToast(toast, error);
-    } finally {
-      setPasswordUpdateLoading(false);
+    if (display_name === profile.display_name) {
+      return;
     }
+
+    const { error } = await supabase
+      .from("profile")
+      .update({ display_name })
+      .eq("id", profile.id);
+
+    if (error) {
+      handleErrorToast(toast, error);
+      return;
+    }
+
+    profile.display_name = display_name;
+    toast({
+      title: "Success!",
+      description: "Display name updated successfully.",
+    });
   }
 
-  async function handleDeleteAccount() {
+  async function handleEmailSubmit(data: z.infer<typeof emailSchema>) {
+    const email = data.email;
+
+    if (email === user.email) {
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ email });
+
+    if (error) {
+      handleErrorToast(toast, error);
+      return;
+    }
+
+    user.email = email;
+    toast({
+      title: "Success!",
+      description: "A verification email has been sent to your new email.",
+    });
+  }
+
+  async function handlePasswordSubmit(data: z.infer<typeof passwordSchema>) {
+    const password = data.password;
+
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (error) {
+      handleErrorToast(toast, error);
+      return;
+    }
+
+    toast({
+      title: "Success!",
+      description: "Password updated successfully.",
+    });
+  }
+
+  async function handleDeleteAccountSubmit() {
     try {
       setAccountDeleteLoading(true);
 
@@ -237,9 +309,9 @@ export default function ProfileSettingsPage({
         description: "Account deleted successfully.",
       });
 
+      await supabase.auth.signOut();
       router.push("/");
     } catch (error) {
-      console.error("Failed to delete account:", error);
       handleErrorToast(toast, error);
     } finally {
       setAccountDeleteLoading(false);
@@ -250,7 +322,7 @@ export default function ProfileSettingsPage({
     <div className="flex flex-1 flex-col gap-10 p-4">
       {/* Page Title */}
       <PageHeaderHeading>Account Settings</PageHeaderHeading>
-      <FormMessage message={message} />
+      <NotificationAlert message={message} />
 
       {/* Avatar Section */}
       <Card className="bg-muted/50">
@@ -258,8 +330,10 @@ export default function ProfileSettingsPage({
           <div className="flex flex-col gap-1">
             <h2 className="text-2xl font-semibold">Avatar</h2>
             <div>
-              <p className="text-sm">This is your avatar.</p>
-              <p className="text-sm">
+              <p className="text-sm text-muted-foreground">
+                This is your avatar.
+              </p>
+              <p className="text-sm text-muted-foreground">
                 Click on the avatar to upload a new one.
               </p>
             </div>
@@ -267,174 +341,225 @@ export default function ProfileSettingsPage({
           <div className="pl-4">
             <AvatarInput
               uid={profile.id}
-              url={avatar_url}
+              url={profile.avatar_url}
               username={profile.username}
-              size={80}
+              uploading={uploading}
+              setUploading={setUploading}
               onUpload={(url) => {
-                setAvatarUrl(url);
-                updateProfile({ display_name, username, avatar_url: url });
+                handleAvatarUpload(url);
               }}
             />
           </div>
         </CardContent>
-        <CardFooter className="border-t py-3 text-sm text-muted-foreground">
+        <CardFooter className="border-t py-3 text-sm text-muted-foreground h-12">
           <p>An avatar is optional but strongly recommended.</p>
         </CardFooter>
       </Card>
 
       {/* Display Name Section */}
       <Card className="bg-muted/50">
-        <CardContent className="p-6 flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="display-name" className="text-2xl font-semibold">
-              Display Name
-            </Label>
-            <p className="text-sm">Enter your full name or display name.</p>
-          </div>
-          <Input
-            id="display-name"
-            type="text"
-            placeholder="Enter your display name"
-            value={display_name || ""}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className="max-w-sm"
-          />
-          {profileError && (
-            <p className="text-sm text-red-600">{profileError}</p>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-between border-t py-3">
-          <p className="text-sm text-muted-foreground">
-            Please use 32 characters maximum.
-          </p>
-          <ActionButton
-            loading={profileUpdateLoading}
-            onClick={() =>
-              updateProfile({ display_name, username, avatar_url })
-            }
-            label="Save"
-            loadingLabel="Saving..."
-          />
-        </CardFooter>
+        <Form {...displayNameForm}>
+          <form
+            onSubmit={displayNameForm.handleSubmit(handleDisplayNameSubmit)}
+          >
+            <CardContent className="p-6 flex flex-col gap-2">
+              <FormField
+                control={displayNameForm.control}
+                name="display_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-2xl font-semibold">
+                      Display Name
+                    </FormLabel>
+                    <FormDescription>
+                      Enter your full name or display name.
+                    </FormDescription>
+                    <FormControl>
+                      <Input
+                        className="md:max-w-sm"
+                        placeholder={profile.display_name ?? ""}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex justify-between border-t py-3 h-12">
+              <p className="text-sm text-muted-foreground pr-4">
+                Please use 32 characters maximum.
+              </p>
+              <SubmitButton
+                size="sm"
+                pendingText="Saving..."
+                disabled={
+                  profile.display_name ===
+                  displayNameForm.getValues().display_name
+                }
+              >
+                Save
+              </SubmitButton>
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
 
       {/* Username Section */}
       <Card className="bg-muted/50">
-        <CardContent className="p-6 flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="username" className="text-2xl font-semibold">
-              Username
-            </Label>
-            <p className="text-sm">
-              This is your URL namespace within the app.
-            </p>
-          </div>
-          <div className="inline-flex w-full max-w-sm">
-            <div className="bg-muted text-muted-foreground border border-muted rounded-l-md flex items-center px-3">
-              <span className="text-sm font-medium">
-                {siteConfig.url.replace(/https?:\/\//g, "")}/players/
-              </span>
-            </div>
-            <Input
-              id="username"
-              type="text"
-              placeholder="your-username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="rounded-none rounded-r-md"
-            />
-          </div>
-          {profileError && (
-            <p className="text-sm text-red-600">{profileError}</p>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-between border-t py-3">
-          <p className="text-sm text-muted-foreground">
-            Please use 48 characters maximum.
-          </p>
-          <ActionButton
-            loading={profileUpdateLoading}
-            onClick={() =>
-              updateProfile({ display_name, username, avatar_url })
-            }
-            label="Save"
-            loadingLabel="Saving..."
-          />
-        </CardFooter>
+        <Form {...usernameForm}>
+          <form onSubmit={usernameForm.handleSubmit(handleUsernameSubmit)}>
+            <CardContent className="p-6 flex flex-col gap-2">
+              <FormField
+                control={usernameForm.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-2xl font-semibold">
+                      Username
+                    </FormLabel>
+                    <FormDescription>
+                      This is your URL namespace within the app.
+                    </FormDescription>
+                    <FormControl>
+                      <div className="inline-flex w-full md:max-w-sm">
+                        <div className="bg-muted text-muted-foreground border border-muted rounded-l-md flex items-center px-3">
+                          <span className="text-sm font-medium">
+                            {siteConfig.url.replace(/https?:\/\//g, "")}
+                            /players/
+                          </span>
+                        </div>
+                        <Input
+                          className="rounded-none rounded-r-md"
+                          placeholder={profile.username}
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex justify-between border-t py-3 h-12">
+              <p className="text-sm text-muted-foreground pr-4">
+                Please use 48 characters maximum.
+              </p>
+              <SubmitButton
+                size="sm"
+                pendingText="Saving..."
+                disabled={
+                  profile.username === usernameForm.getValues().username
+                }
+              >
+                Save
+              </SubmitButton>
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
 
       {/* Email Section */}
       <Card className="bg-muted/50">
-        <CardContent className="p-6 flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="email" className="text-2xl font-semibold">
-              Email
-            </Label>
-            <p className="text-sm">
-              Your email address is used for login and notifications.
-            </p>
-          </div>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="max-w-sm"
-          />
-          {emailError && <p className="text-sm text-red-600">{emailError}</p>}
-        </CardContent>
-        <CardFooter className="flex justify-between border-t py-3">
-          <p className="text-sm text-muted-foreground">
-            Please use a valid email address.
-          </p>
-          <ActionButton
-            loading={emailUpdateLoading}
-            onClick={() => updateEmail({ email })}
-            label="Save"
-            loadingLabel="Saving..."
-          />
-        </CardFooter>
+        <Form {...emailForm}>
+          <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)}>
+            <CardContent className="p-6 flex flex-col gap-2">
+              <FormField
+                control={emailForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-2xl font-semibold">
+                      Email
+                    </FormLabel>
+                    <FormDescription>
+                      Your email address is used for login and notifications.
+                    </FormDescription>
+                    <FormControl>
+                      <Input
+                        className="md:max-w-sm"
+                        placeholder={user.email}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex justify-between border-t py-3 h-12">
+              <p className="text-sm text-muted-foreground pr-4">
+                Please use a valid email address.
+              </p>
+              <SubmitButton
+                size="sm"
+                pendingText="Saving..."
+                disabled={user.email === emailForm.getValues().email}
+              >
+                Save
+              </SubmitButton>
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
 
       {/* Password Section */}
       <Card className="bg-muted/50">
-        <CardContent className="p-6 flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-2xl font-semibold">Password</h2>
-            <p className="text-sm">
-              Change your password to keep your account secure.
-            </p>
-          </div>
-          <Label htmlFor="password">New Password</Label>
-          <PasswordInput
-            name="password"
-            className="max-w-sm"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Label htmlFor="confirm-password">Confirm Password</Label>
-          <PasswordInput
-            name="confirm-password"
-            className="max-w-sm"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          {passwordError && (
-            <p className="text-sm text-red-600">{passwordError}</p>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-between border-t py-3">
-          <p className="text-sm text-muted-foreground">
-            Choose a strong, unique password to protect your account.
-          </p>
-          <ActionButton
-            loading={passwordUpdateLoading}
-            onClick={() => updatePassword({ password, confirmPassword })}
-            label="Save"
-            loadingLabel="Saving..."
-          />
-        </CardFooter>
+        <Form {...passwordForm}>
+          <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
+            <CardContent className="p-6 flex flex-col gap-2">
+              <FormField
+                control={passwordForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-2xl font-semibold">
+                      Password
+                    </FormLabel>
+                    <FormDescription>Enter your new password.</FormDescription>
+                    <FormControl>
+                      <PasswordInput
+                        className="md:max-w-sm"
+                        required={false}
+                        placeholder="Enter your new password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={passwordForm.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="sr-only">Confirm Password</FormLabel>
+                    <FormDescription className="sr-only">
+                      Confirm your new password.
+                    </FormDescription>
+                    <FormControl>
+                      <PasswordInput
+                        className="md:max-w-sm"
+                        placeholder="Confirm your new password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex justify-between border-t py-3 h-12">
+              <p className="text-sm text-muted-foreground pr-4">
+                Choose a strong, unique password to protect your account.
+              </p>
+              <SubmitButton size="sm" pendingText="Saving...">
+                Save
+              </SubmitButton>
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
 
       {/* Delete Account Section */}
@@ -450,16 +575,16 @@ export default function ProfileSettingsPage({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-end border-t border-destructive bg-destructive/10 py-3">
+        <CardFooter className="flex justify-end border-t border-destructive bg-destructive/10 py-3 h-12">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <ActionButton
-                loading={accountDeleteLoading}
-                onClick={() => {}} // handled inside the dialog action
-                label="Delete Account"
-                loadingLabel="Deleting Account..."
+                pending={accountDeleteLoading}
+                pendingText="Deleting Account..."
                 variant="destructive"
-              />
+              >
+                Delete Account
+              </ActionButton>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -473,12 +598,13 @@ export default function ProfileSettingsPage({
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction asChild>
                   <ActionButton
-                    loading={accountDeleteLoading}
-                    onClick={handleDeleteAccount}
-                    label="Delete Account"
-                    loadingLabel="Deleting Account..."
+                    pending={accountDeleteLoading}
+                    onClick={handleDeleteAccountSubmit}
+                    pendingText="Deleting Account..."
                     variant="destructive"
-                  />
+                  >
+                    Delete Account
+                  </ActionButton>
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
