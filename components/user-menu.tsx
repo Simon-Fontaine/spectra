@@ -23,6 +23,8 @@ import {
   Shield,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { SubmitButton } from "./submit-button";
 
 interface UserAvatarProps {
   profile: Profile;
@@ -157,14 +159,15 @@ export function UserMenu({
         <DropdownMenuSeparator />
 
         <form action={signOutAction} className="w-full">
-          <Button
-            type="submit"
+          <SubmitButton
+            size="sm"
             variant="ghost"
-            className="w-full justify-start gap-2 px-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+            pendingText="Loging out..."
           >
-            <LogOut className="size-4" />
+            <LogOut className="h-4 w-4" />
             Log out
-          </Button>
+          </SubmitButton>
         </form>
       </DropdownMenuContent>
     </DropdownMenu>

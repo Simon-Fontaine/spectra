@@ -21,6 +21,7 @@ CREATE TYPE public.ow_role AS ENUM(
 CREATE TABLE public.profile (
     id UUID NOT NULL DEFAULT auth.uid(),
     username VARCHAR NOT NULL,
+    display_name VARCHAR,
     app_role public.app_role NOT NULL DEFAULT 'user'::app_role,
     ow_role public.ow_role NOT NULL,
     avatar_url VARCHAR,
@@ -31,7 +32,8 @@ CREATE TABLE public.profile (
     CONSTRAINT profile_pkey PRIMARY KEY (id),
     CONSTRAINT profile_username_key UNIQUE (username),
     CONSTRAINT profile_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT profile_username_format CHECK (username ~ '^[a-zA-Z0-9_]{1,32}$')
+    CONSTRAINT profile_username_format CHECK (username ~ '^[a-z0-9_]{1,48}$'),
+    CONSTRAINT profile_display_name_format CHECK (display_name ~ '^[a-zA-Z0-9_]{1,32}$')
 );
 
 -- Helper function to check if user is admin
@@ -165,4 +167,3 @@ $$ LANGUAGE plpgsql;
 
 -- Grant execute on update_profile function
 GRANT EXECUTE ON FUNCTION public.update_profile(UUID, JSONB) TO authenticated;
-

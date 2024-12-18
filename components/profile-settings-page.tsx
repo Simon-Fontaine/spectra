@@ -11,18 +11,28 @@ import { Database } from "@/lib/database.types";
 import { createClient } from "@/utils/supabase/client";
 import AvatarInput from "./avatar-input";
 import { useToast } from "@/hooks/use-toast";
+import PasswordInput from "./password-input";
+import { FormMessage, Message } from "./form-message";
 
 interface ProfileSettingsProps {
   profile: Database["public"]["Tables"]["profile"]["Row"];
+  message: Message;
 }
 
-export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
+export default function ProfileSettingsPage({
+  profile,
+  message,
+}: ProfileSettingsProps) {
   const supabase = createClient();
+  const { toast } = useToast();
+
   const [loading, setLoading] = useState(false);
   const [display_name, setDisplayName] = useState(profile.display_name);
   const [username, setUsername] = useState(profile.username);
   const [avatar_url, setAvatarUrl] = useState(profile.avatar_url);
-  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   async function updateProfile({
     display_name,
@@ -74,6 +84,92 @@ export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
     }
   }
 
+  async function updateEmail({ email }: { email: string }) {
+    try {
+      setLoading(true);
+
+      const { error } = await supabase.auth.updateUser({ email });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success!",
+        description: "A verification email has been sent to your new email.",
+      });
+    } catch (error) {
+      console.error("Failed to update email:", error);
+
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Error!",
+          description:
+            error.message ||
+            "An unknown error occurred. Please try again later.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error!",
+          description: "An unknown error occurred. Please try again later.",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updatePassword({
+    password,
+    confirmPassword,
+  }: {
+    password: string;
+    confirmPassword: string;
+  }) {
+    try {
+      setLoading(true);
+
+      if (password !== confirmPassword) {
+        throw new Error("Passwords do not match");
+      }
+
+      const { error: passwordError } = await supabase.auth.updateUser({
+        password,
+      });
+
+      if (passwordError) {
+        throw passwordError;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Password updated successfully.",
+      });
+    } catch (error) {
+      console.error("Failed to update password:", error);
+
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Error!",
+          description:
+            error.message ||
+            "An unknown error occurred. Please try again later.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error!",
+          description: "An unknown error occurred. Please try again later.",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleDeleteAccount() {
     console.log("Deleting account...");
   }
@@ -82,6 +178,7 @@ export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
     <div className="flex flex-1 flex-col gap-10 p-4">
       {/* Page Title */}
       <PageHeaderHeading>Account Settings</PageHeaderHeading>
+      <FormMessage message={message} />
 
       {/* Avatar Section */}
       <Card className="bg-muted/50">
@@ -183,6 +280,78 @@ export default function ProfileSettingsPage({ profile }: ProfileSettingsProps) {
             onClick={() =>
               updateProfile({ display_name, username, avatar_url })
             }
+            disabled={loading}
+          >
+            Save
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Email Section */}
+      <Card className="bg-muted/50">
+        <CardContent className="p-6 flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="email" className="text-2xl font-semibold">
+              Email
+            </Label>
+            <p className="text-sm">
+              Your email address is used for login and notifications.
+            </p>
+          </div>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="max-w-sm"
+          />
+        </CardContent>
+        <CardFooter className="flex justify-between border-t py-3">
+          <p className="text-sm text-muted-foreground">
+            Please use a valid email address.
+          </p>
+          <Button
+            size="sm"
+            onClick={() => updateEmail({ email })}
+            disabled={loading}
+          >
+            Save
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Password Section */}
+      <Card className="bg-muted/50">
+        <CardContent className="p-6 flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl font-semibold">Password</h2>
+            <p className="text-sm">
+              Change your password to keep your account secure.
+            </p>
+          </div>
+          <Label htmlFor="password">New Password</Label>
+          <PasswordInput
+            name="password"
+            className="max-w-sm"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Label htmlFor="confirm-password">Confirm Password</Label>
+          <PasswordInput
+            name="confirm-password"
+            className="max-w-sm"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </CardContent>
+        <CardFooter className="flex justify-between border-t py-3">
+          <p className="text-sm text-muted-foreground">
+            Choose a strong, unique password to protect your account.
+          </p>
+          <Button
+            size="sm"
+            onClick={() => updatePassword({ password, confirmPassword })}
             disabled={loading}
           >
             Save

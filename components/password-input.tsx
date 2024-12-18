@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
@@ -16,13 +17,14 @@ type Props = React.ComponentProps<"input"> & {
 
 export default function PasswordInput({
   name,
+  className,
   placeholder = "••••••••",
   ...props
 }: Props) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="relative w-full">
+    <div className={cn("relative w-full", className)}>
       <TooltipProvider delayDuration={0}>
         <Input
           name={name}

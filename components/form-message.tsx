@@ -12,14 +12,14 @@ export function FormMessage({ message }: { message: Message }) {
       {"success" in message && (
         <Alert>
           <CircleCheckIcon className="h-[1.2rem] w-[1.2rem]" />
-          <AlertTitle>Heads up!</AlertTitle>
+          <AlertTitle>Success!</AlertTitle>
           <AlertDescription>{message.success}</AlertDescription>
         </Alert>
       )}
       {"error" in message && (
         <Alert variant="destructive">
           <CircleAlertIcon className="h-[1.2rem] w-[1.2rem]" />
-          <AlertTitle>Heads up!</AlertTitle>
+          <AlertTitle>Error!</AlertTitle>
           <AlertDescription>{message.error}</AlertDescription>
         </Alert>
       )}
