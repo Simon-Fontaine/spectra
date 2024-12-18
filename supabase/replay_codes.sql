@@ -24,7 +24,8 @@ CREATE TABLE public.replays (
     is_reviewed BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT replays_pkey PRIMARY KEY (id)
+    constraint replays_uploaded_by_fkey foreign key (uploaded_by) references auth.users (id) on update cascade on delete cascade,
+    CONSTRAINT replays_pkey PRIMARY KEY (id),
     CONSTRAINT replays_code_key UNIQUE (code)
 );
 

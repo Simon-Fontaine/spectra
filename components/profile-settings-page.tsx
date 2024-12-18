@@ -13,26 +13,92 @@ import AvatarInput from "./avatar-input";
 import { useToast } from "@/hooks/use-toast";
 import PasswordInput from "./password-input";
 import { FormMessage, Message } from "./form-message";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
+import { useRouter } from "next/navigation";
+import { Icons } from "./icons";
+import { User } from "@supabase/supabase-js";
 
 interface ProfileSettingsProps {
   profile: Database["public"]["Tables"]["profile"]["Row"];
+  user: User;
   message: Message;
+}
+
+function handleErrorToast(toast: any, error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : "An unknown error occurred. Please try again later.";
+
+  toast({
+    variant: "destructive",
+    title: "Error!",
+    description: message,
+  });
+}
+
+// Reusable button component
+function ActionButton({
+  loading,
+  onClick,
+  label,
+  loadingLabel,
+  variant = "default",
+}: {
+  loading: boolean;
+  onClick: () => void;
+  label: string;
+  loadingLabel?: string;
+  variant?:
+    | "destructive"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "default"
+    | "link";
+}) {
+  return (
+    <Button size="sm" onClick={onClick} disabled={loading} variant={variant}>
+      {loading ? <Icons.spinner className="h-4 w-4 animate-spin" /> : null}
+      {loading ? (loadingLabel ?? label) : label}
+    </Button>
+  );
 }
 
 export default function ProfileSettingsPage({
   profile,
+  user,
   message,
 }: ProfileSettingsProps) {
   const supabase = createClient();
+  const router = useRouter();
   const { toast } = useToast();
 
-  const [loading, setLoading] = useState(false);
   const [display_name, setDisplayName] = useState(profile.display_name);
   const [username, setUsername] = useState(profile.username);
   const [avatar_url, setAvatarUrl] = useState(profile.avatar_url);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(user.email);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [profileUpdateLoading, setProfileUpdateLoading] = useState(false);
+  const [passwordUpdateLoading, setPasswordUpdateLoading] = useState(false);
+  const [emailUpdateLoading, setEmailUpdateLoading] = useState(false);
+  const [accountDeleteLoading, setAccountDeleteLoading] = useState(false);
+
+  const [profileError, setProfileError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   async function updateProfile({
     display_name,
@@ -43,8 +109,28 @@ export default function ProfileSettingsPage({
     username: string;
     avatar_url: string | null;
   }) {
+    setProfileError("");
     try {
-      setLoading(true);
+      setProfileUpdateLoading(true);
+
+      if (!username || username.trim().length === 0) {
+        setProfileError("Username cannot be empty.");
+        return;
+      }
+
+      if (profile.username !== username) {
+        const { data: existingUser, error: checkError } = await supabase
+          .from("profile")
+          .select("id")
+          .eq("username", username)
+          .maybeSingle();
+
+        if (checkError) throw checkError;
+        if (existingUser) {
+          setProfileError("Username is already taken.");
+          return;
+        }
+      }
 
       const { error } = await supabase
         .from("profile")
@@ -63,36 +149,30 @@ export default function ProfileSettingsPage({
       });
     } catch (error) {
       console.error("Failed to update profile:", error);
-
-      if (error instanceof Error) {
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description:
-            error.message ||
-            "An unknown error occurred. Please try again later.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description: "An unknown error occurred. Please try again later.",
-        });
-      }
+      handleErrorToast(toast, error);
     } finally {
-      setLoading(false);
+      setProfileUpdateLoading(false);
     }
   }
 
-  async function updateEmail({ email }: { email: string }) {
+  async function updateEmail({ email }: { email: string | undefined }) {
+    setEmailError("");
     try {
-      setLoading(true);
+      setEmailUpdateLoading(true);
+
+      if (!email || !email.includes("@")) {
+        setEmailError("Please enter a valid email address.");
+        return;
+      }
+
+      if (email === user.email) {
+        setEmailError("This email is already in use.");
+        return;
+      }
 
       const { error } = await supabase.auth.updateUser({ email });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Success!",
@@ -100,24 +180,9 @@ export default function ProfileSettingsPage({
       });
     } catch (error) {
       console.error("Failed to update email:", error);
-
-      if (error instanceof Error) {
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description:
-            error.message ||
-            "An unknown error occurred. Please try again later.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description: "An unknown error occurred. Please try again later.",
-        });
-      }
+      handleErrorToast(toast, error);
     } finally {
-      setLoading(false);
+      setEmailUpdateLoading(false);
     }
   }
 
@@ -128,20 +193,20 @@ export default function ProfileSettingsPage({
     password: string;
     confirmPassword: string;
   }) {
+    setPasswordError("");
     try {
-      setLoading(true);
+      setPasswordUpdateLoading(true);
 
       if (password !== confirmPassword) {
-        throw new Error("Passwords do not match");
+        setPasswordError("Passwords do not match.");
+        return;
       }
 
       const { error: passwordError } = await supabase.auth.updateUser({
         password,
       });
 
-      if (passwordError) {
-        throw passwordError;
-      }
+      if (passwordError) throw passwordError;
 
       toast({
         title: "Success!",
@@ -149,29 +214,36 @@ export default function ProfileSettingsPage({
       });
     } catch (error) {
       console.error("Failed to update password:", error);
-
-      if (error instanceof Error) {
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description:
-            error.message ||
-            "An unknown error occurred. Please try again later.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description: "An unknown error occurred. Please try again later.",
-        });
-      }
+      handleErrorToast(toast, error);
     } finally {
-      setLoading(false);
+      setPasswordUpdateLoading(false);
     }
   }
 
   async function handleDeleteAccount() {
-    console.log("Deleting account...");
+    try {
+      setAccountDeleteLoading(true);
+
+      const response = await fetch("/api/delete-account", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete account");
+      }
+
+      toast({
+        title: "Success!",
+        description: "Account deleted successfully.",
+      });
+
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      handleErrorToast(toast, error);
+    } finally {
+      setAccountDeleteLoading(false);
+    }
   }
 
   return (
@@ -227,20 +299,22 @@ export default function ProfileSettingsPage({
             onChange={(e) => setDisplayName(e.target.value)}
             className="max-w-sm"
           />
+          {profileError && (
+            <p className="text-sm text-red-600">{profileError}</p>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between border-t py-3">
           <p className="text-sm text-muted-foreground">
             Please use 32 characters maximum.
           </p>
-          <Button
-            size="sm"
+          <ActionButton
+            loading={profileUpdateLoading}
             onClick={() =>
               updateProfile({ display_name, username, avatar_url })
             }
-            disabled={loading}
-          >
-            Save
-          </Button>
+            label="Save"
+            loadingLabel="Saving..."
+          />
         </CardFooter>
       </Card>
 
@@ -270,20 +344,22 @@ export default function ProfileSettingsPage({
               className="rounded-none rounded-r-md"
             />
           </div>
+          {profileError && (
+            <p className="text-sm text-red-600">{profileError}</p>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between border-t py-3">
           <p className="text-sm text-muted-foreground">
             Please use 48 characters maximum.
           </p>
-          <Button
-            size="sm"
+          <ActionButton
+            loading={profileUpdateLoading}
             onClick={() =>
               updateProfile({ display_name, username, avatar_url })
             }
-            disabled={loading}
-          >
-            Save
-          </Button>
+            label="Save"
+            loadingLabel="Saving..."
+          />
         </CardFooter>
       </Card>
 
@@ -306,18 +382,18 @@ export default function ProfileSettingsPage({
             onChange={(e) => setEmail(e.target.value)}
             className="max-w-sm"
           />
+          {emailError && <p className="text-sm text-red-600">{emailError}</p>}
         </CardContent>
         <CardFooter className="flex justify-between border-t py-3">
           <p className="text-sm text-muted-foreground">
             Please use a valid email address.
           </p>
-          <Button
-            size="sm"
+          <ActionButton
+            loading={emailUpdateLoading}
             onClick={() => updateEmail({ email })}
-            disabled={loading}
-          >
-            Save
-          </Button>
+            label="Save"
+            loadingLabel="Saving..."
+          />
         </CardFooter>
       </Card>
 
@@ -344,18 +420,20 @@ export default function ProfileSettingsPage({
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
+          {passwordError && (
+            <p className="text-sm text-red-600">{passwordError}</p>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between border-t py-3">
           <p className="text-sm text-muted-foreground">
             Choose a strong, unique password to protect your account.
           </p>
-          <Button
-            size="sm"
+          <ActionButton
+            loading={passwordUpdateLoading}
             onClick={() => updatePassword({ password, confirmPassword })}
-            disabled={loading}
-          >
-            Save
-          </Button>
+            label="Save"
+            loadingLabel="Saving..."
+          />
         </CardFooter>
       </Card>
 
@@ -369,13 +447,42 @@ export default function ProfileSettingsPage({
             <p className="text-sm">
               Permanently remove your account and all its contents. This action
               is irreversible.
-            </p>{" "}
+            </p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end border-t border-destructive bg-destructive/10 py-3">
-          <Button size="sm" variant="destructive" onClick={handleDeleteAccount}>
-            Delete Personal Account
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <ActionButton
+                loading={accountDeleteLoading}
+                onClick={() => {}} // handled inside the dialog action
+                label="Delete Account"
+                loadingLabel="Deleting Account..."
+                variant="destructive"
+              />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <ActionButton
+                    loading={accountDeleteLoading}
+                    onClick={handleDeleteAccount}
+                    label="Delete Account"
+                    loadingLabel="Deleting Account..."
+                    variant="destructive"
+                  />
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardFooter>
       </Card>
     </div>

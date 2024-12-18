@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/server";
-import { getProfile } from "@/utils/profile";
+import { getUserData } from "@/utils/profile";
 import { UserMenu } from "./user-menu";
 
 export default async function AuthButton() {
@@ -23,7 +23,8 @@ export default async function AuthButton() {
     );
   }
 
-  const profile = await getProfile();
+  const userData = await getUserData();
+  const profile = userData?.profile;
 
   if (!profile)
     return (

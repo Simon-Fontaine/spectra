@@ -1,7 +1,7 @@
 import { Database } from "@/lib/database.types";
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { getProfile } from "../profile";
+import { getUserData } from "../profile";
 
 export const updateSession = async (request: NextRequest) => {
   try {
@@ -22,10 +22,9 @@ export const updateSession = async (request: NextRequest) => {
       }
     );
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const profile = await getProfile();
+    const userData = await getUserData();
+    const user = userData?.user;
+    const profile = userData?.profile;
 
     const path = request.nextUrl.pathname;
 

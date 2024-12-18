@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
 
 export type Profile = Database["public"]["Tables"]["profile"]["Row"];
 
-export async function getProfile() {
+export async function getUserData(): Promise<{
+  user: any;
+  profile: Profile | null;
+} | null> {
   const supabase = await createClient();
 
   const {
@@ -12,32 +15,45 @@ export async function getProfile() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profile")
     .select("*")
     .eq("id", user.id)
     .single();
 
-  return profile;
+  if (error) {
+    console.error("Error fetching profile:", error);
+    return { user, profile: null };
+  }
+
+  return { user, profile };
 }
 
-export async function isAdmin() {
-  const profile = await getProfile();
-  return profile?.app_role === "admin";
+export async function isAdmin(): Promise<boolean> {
+  const userData = await getUserData();
+  return userData?.profile?.app_role === "admin";
 }
 
 export async function requireProfile() {
-  const profile = await getProfile();
-  if (!profile) {
-    redirect("/sign-in");
+  const userData = await getUserData();
+
+  if (!userData) {
+    return redirect("/sign-in");
   }
-  return profile;
+
+  if (!userData.profile) {
+    return redirect("/onboarding");
+  }
+
+  return userData;
 }
 
 export async function requireAdmin() {
-  const profile = await getProfile();
-  if (!profile || profile.app_role !== "admin") {
-    redirect("/dashboard");
+  const isAdminUser = await isAdmin();
+
+  if (!isAdminUser) {
+    return redirect("/sign-in");
   }
-  return profile;
+
+  return true;
 }

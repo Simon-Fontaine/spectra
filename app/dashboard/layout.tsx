@@ -25,10 +25,9 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const profile = await requireProfile();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const userData = await requireProfile();
+  const profile = userData.profile!;
+  const user = userData.user;
 
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";

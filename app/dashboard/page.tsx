@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const profile = await requireProfile();
+  const userData = await requireProfile();
+  const profile = userData.profile!;
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">

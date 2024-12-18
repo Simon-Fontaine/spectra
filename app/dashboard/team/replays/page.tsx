@@ -17,7 +17,8 @@ export const metadata: Metadata = {
 
 export default async function DashboardTeamReplayPage() {
   const supabase = await createClient();
-  const profile = await requireProfile();
+  const userData = await requireProfile();
+  const profile = userData.profile!;
 
   // Fetch the replays and maps with all necessary relationships
   const { data: replaysData, error: replaysError } = await supabase

@@ -1,4 +1,4 @@
-import { FormMessage, Message } from "@/components/form-message";
+import { Message } from "@/components/form-message";
 import ProfileSettingsPage from "@/components/profile-settings-page";
 import { requireProfile } from "@/utils/profile";
 import { Metadata } from "next";
@@ -11,8 +11,13 @@ export const metadata: Metadata = {
 export default async function DashboardProfileSettingsPage(props: {
   searchParams: Promise<Message>;
 }) {
-  const profile = await requireProfile();
+  const userData = await requireProfile();
   const searchParams = await props.searchParams;
 
-  return <ProfileSettingsPage profile={profile} message={searchParams} />;
+  const profile = userData.profile!;
+  const user = userData.user;
+
+  return (
+    <ProfileSettingsPage profile={profile} user={user} message={searchParams} />
+  );
 }
