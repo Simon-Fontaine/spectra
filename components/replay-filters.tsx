@@ -1,15 +1,10 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Database } from "@/lib/database.types";
+import { ComboBoxResponsive } from "./combo-box";
 
 type Replay = Database["public"]["Tables"]["replays"]["Row"];
 
@@ -40,25 +35,38 @@ export default function ReplayFilters({
   map_modes,
   onFilterChange,
 }: ReplayFiltersProps) {
-  const [selectedMap, setSelectedMap] = useState<string>("");
-  const [selectedMode, setSelectedMode] = useState<string>("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [selectedMap, setSelectedMap] = useState<{
+    value: string;
+    label: string;
+  } | null>(null);
+  const [selectedMode, setSelectedMode] = useState<{
+    value: string;
+    label: string;
+  } | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<{
+    value: string;
+    label: string;
+  } | null>(null);
 
   const filterReplays = useCallback(() => {
     let filtered = [...replays];
 
-    if (selectedMap && selectedMap !== "none") {
-      filtered = filtered.filter((replay) => replay.map_name === selectedMap);
+    if (selectedMap && selectedMap.value !== "none") {
+      filtered = filtered.filter(
+        (replay) => replay.map_name === selectedMap.value
+      );
     }
 
-    if (selectedMode && selectedMode !== "none") {
-      filtered = filtered.filter((replay) => replay.map_mode === selectedMode);
+    if (selectedMode && selectedMode.value !== "none") {
+      filtered = filtered.filter(
+        (replay) => replay.map_mode === selectedMode.value
+      );
     }
 
-    if (selectedStatus && selectedStatus !== "none") {
-      if (selectedStatus === "reviewed") {
+    if (selectedStatus && selectedStatus.value !== "none") {
+      if (selectedStatus.value === "reviewed") {
         filtered = filtered.filter((replay) => replay.is_reviewed);
-      } else if (selectedStatus === "unreviewed") {
+      } else if (selectedStatus.value === "unreviewed") {
         filtered = filtered.filter((replay) => !replay.is_reviewed);
       }
     }
@@ -71,15 +79,27 @@ export default function ReplayFilters({
   }, [selectedMap, selectedMode, selectedStatus, filterReplays]);
 
   const clearFilters = () => {
-    setSelectedMap("none");
-    setSelectedMode("none");
-    setSelectedStatus("none");
+    setSelectedMap(null);
+    setSelectedMode(null);
+    setSelectedStatus(null);
   };
 
   const hasActiveFilters =
-    (selectedMap && selectedMap !== "none") ||
-    (selectedMode && selectedMode !== "none") ||
-    (selectedStatus && selectedStatus !== "none");
+    (selectedMap && selectedMap.value !== "none") ||
+    (selectedMode && selectedMode.value !== "none") ||
+    (selectedStatus && selectedStatus.value !== "none");
+
+  const maps = map_names.map((map) => ({ value: map.id, label: map.name }));
+  maps.unshift({ value: "none", label: "None" });
+
+  const modes = map_modes.map((mode) => ({ value: mode.id, label: mode.name }));
+  modes.unshift({ value: "none", label: "None" });
+
+  const statuses = [
+    { value: "none", label: "None" },
+    { value: "reviewed", label: "Reviewed" },
+    { value: "unreviewed", label: "Not Reviewed" },
+  ];
 
   return (
     <fieldset className="flex flex-col gap-4 py-4 md:flex-row md:flex-wrap lg:justify-end">
@@ -93,31 +113,13 @@ export default function ReplayFilters({
         <label htmlFor="map-filter" className="sr-only">
           Map filter
         </label>
-        <Select value={selectedMap || "none"} onValueChange={setSelectedMap}>
-          <SelectTrigger
-            id="map-filter"
-            className="md:w-[200px]"
-            aria-label="Filter by map"
-          >
-            <SelectValue placeholder="Select map" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="none" className="cursor-pointer">
-                None
-              </SelectItem>
-              {map_names.map((map) => (
-                <SelectItem
-                  key={map.id}
-                  value={map.id}
-                  className="cursor-pointer"
-                >
-                  {map.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <ComboBoxResponsive
+          values={maps}
+          selectedValue={selectedMap}
+          setSelectedValue={setSelectedMap}
+          placeholder="Select map"
+          buttonLabel="Filter by map"
+        />
       </div>
 
       {/* Mode Filter */}
@@ -125,31 +127,13 @@ export default function ReplayFilters({
         <label htmlFor="mode-filter" className="sr-only">
           Game mode filter
         </label>
-        <Select value={selectedMode || "none"} onValueChange={setSelectedMode}>
-          <SelectTrigger
-            id="mode-filter"
-            className="md:w-[200px]"
-            aria-label="Filter by game mode"
-          >
-            <SelectValue placeholder="Select game mode" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="none" className="cursor-pointer">
-                None
-              </SelectItem>
-              {map_modes.map((mode) => (
-                <SelectItem
-                  key={mode.id}
-                  value={mode.name}
-                  className="cursor-pointer"
-                >
-                  {mode.name}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <ComboBoxResponsive
+          values={modes}
+          selectedValue={selectedMode}
+          setSelectedValue={setSelectedMode}
+          placeholder="Select game mode"
+          buttonLabel="Filter by mode"
+        />
       </div>
 
       {/* Review Status Filter */}
@@ -157,31 +141,13 @@ export default function ReplayFilters({
         <label htmlFor="review-status-filter" className="sr-only">
           Review status filter
         </label>
-        <Select
-          value={selectedStatus || "none"}
-          onValueChange={setSelectedStatus}
-        >
-          <SelectTrigger
-            id="review-status-filter"
-            className="md:w-[200px]"
-            aria-label="Filter by review status"
-          >
-            <SelectValue placeholder="Review status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="none" className="cursor-pointer">
-                None
-              </SelectItem>
-              <SelectItem value="reviewed" className="cursor-pointer">
-                Reviewed
-              </SelectItem>
-              <SelectItem value="unreviewed" className="cursor-pointer">
-                Not Reviewed
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <ComboBoxResponsive
+          values={statuses}
+          selectedValue={selectedStatus}
+          setSelectedValue={setSelectedStatus}
+          placeholder="Review status"
+          buttonLabel="Filter by status"
+        />
       </div>
 
       {hasActiveFilters &&
