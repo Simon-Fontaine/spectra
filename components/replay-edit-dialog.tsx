@@ -93,7 +93,11 @@ export default function ReplayEditDialog({
               </SelectTrigger>
               <SelectContent>
                 {map_names.map((map) => (
-                  <SelectItem key={map.id} value={map.name}>
+                  <SelectItem
+                    className="cursor-pointer hover:bg-muted"
+                    key={map.id}
+                    value={map.name}
+                  >
                     {map.name}
                   </SelectItem>
                 ))}
@@ -119,7 +123,11 @@ export default function ReplayEditDialog({
               </SelectTrigger>
               <SelectContent>
                 {map_modes.map((mode) => (
-                  <SelectItem key={mode.id} value={mode.name}>
+                  <SelectItem
+                    className="cursor-pointer hover:bg-muted"
+                    key={mode.id}
+                    value={mode.name}
+                  >
                     {mode.name}
                   </SelectItem>
                 ))}
@@ -147,9 +155,24 @@ export default function ReplayEditDialog({
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Victory">Victory</SelectItem>
-                <SelectItem value="Defeat">Defeat</SelectItem>
-                <SelectItem value="Draw">Draw</SelectItem>
+                <SelectItem
+                  className="cursor-pointer hover:bg-muted"
+                  value="Victory"
+                >
+                  Victory
+                </SelectItem>
+                <SelectItem
+                  className="cursor-pointer hover:bg-muted"
+                  value="Defeat"
+                >
+                  Defeat
+                </SelectItem>
+                <SelectItem
+                  className="cursor-pointer hover:bg-muted"
+                  value="Draw"
+                >
+                  Draw
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

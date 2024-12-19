@@ -1,12 +1,15 @@
+import { PageHeaderHeading } from "@/components/page-header";
+import { createClient } from "@/utils/supabase/server";
+
 export default async function DashboardAdminUsersPage() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("profile").select("*");
+
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-      </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+    <div className="flex flex-1 flex-col gap-10 p-4">
+      {/* Page Title */}
+      <PageHeaderHeading>User Management</PageHeaderHeading>
     </div>
   );
 }

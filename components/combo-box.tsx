@@ -25,7 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ArrowDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Value = {
@@ -62,7 +62,7 @@ export function ComboBoxResponsive({
       )}
     >
       {selectedValue ? selectedValue.label : buttonLabel}
-      <ArrowDown className="h-4 w-4 ml-2" />
+      <ChevronDown className="text-muted-foreground h-4 w-4 ml-2" />
     </Button>
   );
 

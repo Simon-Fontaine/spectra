@@ -22,7 +22,6 @@ export async function getUserData(): Promise<{
     .single();
 
   if (error) {
-    console.error("Error fetching profile:", error);
     return { user, profile: null };
   }
 

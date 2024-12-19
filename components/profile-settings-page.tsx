@@ -206,8 +206,9 @@ export default function ProfileSettingsPage({
 
     if (checkError) throw checkError;
     if (existingUser) {
-      handleErrorToast(toast, new Error("Username is already taken"));
-      return;
+      return usernameForm.setError("username", {
+        message: "Username is already taken",
+      });
     }
 
     const { error } = await supabase
@@ -377,7 +378,7 @@ export default function ProfileSettingsPage({
                     <FormControl>
                       <Input
                         className="md:max-w-sm"
-                        placeholder={profile.display_name ?? ""}
+                        placeholder={profile.display_name ?? profile.username}
                         {...field}
                       />
                     </FormControl>
