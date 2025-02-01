@@ -23,6 +23,9 @@ export default async function DashboardUserEditPage(
     where: {
       id: id,
     },
+    omit: {
+      password: true,
+    },
     include: { sessions: true },
   });
 

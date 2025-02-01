@@ -10,11 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { UserRowActions } from "./row-actions";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Role, Specialty, User } from "@prisma/client";
+import { Role, Specialty } from "@prisma/client";
 import { DataTableFilterField } from "@/types/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { CleanUser } from "@/types/models";
 
-export const filterFields: DataTableFilterField<User>[] = [
+export const filterFields: DataTableFilterField<CleanUser>[] = [
   {
     id: "username",
     label: "Username",
@@ -40,7 +41,7 @@ export const filterFields: DataTableFilterField<User>[] = [
   },
 ];
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<CleanUser>[] = [
   {
     id: "select",
     header: ({ table }) => (

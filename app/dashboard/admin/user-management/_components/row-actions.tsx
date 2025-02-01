@@ -47,10 +47,11 @@ import {
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { useAction } from "next-safe-action/hooks";
-import { Role, Specialty, User } from "@prisma/client";
+import { Role, Specialty } from "@prisma/client";
 import LoadingButton from "@/components/loading-button";
+import { CleanUser } from "@/types/models";
 
-export function UserRowActions({ row }: { row: Row<User> }) {
+export function UserRowActions({ row }: { row: Row<CleanUser> }) {
   const toastRef = useRef<string | number | undefined>(undefined);
 
   const { execute: executeUpdateRole, isPending: isUpdateRolePending } =
