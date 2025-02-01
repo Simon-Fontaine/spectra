@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { APP_CONFIG_PRIVATE } from "@/lib/config.private";
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 
 /**
  * Resend client instance for sending transactional emails.

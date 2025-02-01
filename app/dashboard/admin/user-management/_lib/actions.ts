@@ -1,8 +1,8 @@
 "use server";
 
-import prismaEdge from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { resend } from "@/lib/email/resend";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { ActionError, adminActionClient } from "@/lib/safe-action";
 import { getRoleSchema, getSpecialtySchema } from "@/lib/zod";
 import { revalidatePath } from "next/cache";
@@ -22,7 +22,7 @@ export const handleUpdateUserRole = adminActionClient
         throw new ActionError("You cannot update your own role.");
       }
 
-      const existingUser = await prismaEdge.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { id: userId },
       });
 
@@ -35,7 +35,7 @@ export const handleUpdateUserRole = adminActionClient
         ? existingRoles.filter((r) => r !== role)
         : [...existingRoles, role];
 
-      await prismaEdge.user.update({
+      await prisma.user.update({
         where: { id: userId },
         data: { roles: newRoles },
       });
@@ -65,7 +65,7 @@ export const handleUpdateUserSpecialty = adminActionClient
   .schema(updateUserSpecialtySchema)
   .action(
     async ({ parsedInput: { userId, specialty } }) => {
-      const existingUser = await prismaEdge.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { id: userId },
       });
 
@@ -73,7 +73,7 @@ export const handleUpdateUserSpecialty = adminActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      await prismaEdge.user.update({
+      await prisma.user.update({
         where: { id: userId },
         data: { specialty },
       });
@@ -108,7 +108,7 @@ export const handleDeleteUser = adminActionClient
         );
       }
 
-      const deletedUser = await prismaEdge.user.delete({
+      const deletedUser = await prisma.user.delete({
         where: { id: userId },
       });
 

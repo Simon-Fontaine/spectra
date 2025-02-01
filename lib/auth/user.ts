@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import prismaEdge from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
 /**
  * Registers a new user in the database with a hashed password.
@@ -22,7 +22,7 @@ export async function registerUser({
   avatarUrl?: string;
 }) {
   // Check if the username or email is already taken
-  const existing = await prismaEdge.user.findFirst({
+  const existing = await prisma.user.findFirst({
     where: {
       OR: [{ username }, { email }],
     },
@@ -35,7 +35,7 @@ export async function registerUser({
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Create user
-  return prismaEdge.user.create({
+  return prisma.user.create({
     data: {
       username,
       email,
@@ -55,7 +55,7 @@ export async function registerUser({
  * @param password - The plain-text password to verify.
  */
 export async function verifyUser(usernameOrEmail: string, password: string) {
-  const user = await prismaEdge.user.findFirst({
+  const user = await prisma.user.findFirst({
     where: {
       OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
     },
@@ -74,7 +74,7 @@ export async function verifyUser(usernameOrEmail: string, password: string) {
  * @param userId - The ID of the user.
  */
 export async function markEmailVerified(userId: string) {
-  await prismaEdge.user.update({
+  await prisma.user.update({
     where: { id: userId },
     data: { isEmailVerified: true },
   });
@@ -88,7 +88,7 @@ export async function markEmailVerified(userId: string) {
  */
 export async function updateUserPassword(userId: string, newPassword: string) {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
-  await prismaEdge.user.update({
+  await prisma.user.update({
     where: { id: userId },
     data: { password: hashedPassword },
   });
@@ -101,13 +101,13 @@ export async function updateUserPassword(userId: string, newPassword: string) {
  * @param email - The email address to match.
  */
 export async function consumeInvitation(email: string) {
-  const invitation = await prismaEdge.invitation.findFirst({
+  const invitation = await prisma.invitation.findFirst({
     where: { email, usedAt: null, expiresAt: { gte: new Date() } },
   });
 
   if (!invitation) return null;
 
-  await prismaEdge.invitation.update({
+  await prisma.invitation.update({
     where: { id: invitation.id },
     data: { usedAt: new Date() },
   });

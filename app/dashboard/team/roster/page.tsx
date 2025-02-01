@@ -3,7 +3,7 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
-import prismaEdge from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { TeamRoster } from "@/components/team-roster";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamRosterPage() {
-  const members = await prismaEdge.user.findMany({
+  const members = await prisma.user.findMany({
     omit: {
       email: true,
       password: true,

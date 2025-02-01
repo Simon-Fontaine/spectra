@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "@/components/ui/sonner";
 import { Geist, Geist_Mono } from "next/font/google";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { ThemeProvider } from "@/providers/theme-provider";
 
 const geistSans = Geist({

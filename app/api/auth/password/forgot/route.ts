@@ -1,10 +1,10 @@
-import prisma from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 import { resend } from "@/lib/email/resend";
 import { Ratelimit } from "@upstash/ratelimit";
 import { VerificationType } from "@prisma/client";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { cleanIpAddress } from "@/lib/utils/requestDetails";
 import { createVerificationToken } from "@/lib/auth/verification";
 

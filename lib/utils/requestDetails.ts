@@ -1,5 +1,5 @@
 import { WebServiceClient } from "@maxmind/geoip2-node";
-import { APP_CONFIG_PRIVATE } from "@/lib/config.private";
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 
 // Type definitions
 interface GeoLocation {

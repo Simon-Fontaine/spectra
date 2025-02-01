@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { CheckCircle2Icon } from "lucide-react";
-import { APP_LOGO } from "@/lib/config-ui";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_LOGO } from "@/config/config-ui";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { SignInForm } from "@/components/forms/signin-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 

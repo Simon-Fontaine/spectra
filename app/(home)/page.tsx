@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { ChevronRightIcon, VideoIcon } from "lucide-react";
 import Link from "next/link";
 

@@ -1,8 +1,8 @@
-import prisma from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { resend } from "@/lib/email/resend";
 import { VerificationType } from "@prisma/client";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { getSessionFromRawCookie } from "@/lib/auth/session";
 import { createVerificationToken } from "@/lib/auth/verification";
 

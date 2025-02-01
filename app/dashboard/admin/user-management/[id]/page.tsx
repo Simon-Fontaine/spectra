@@ -1,5 +1,5 @@
 import Link from "next/link";
-import prismaEdge from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,7 +19,7 @@ export default async function DashboardUserEditPage(
 ) {
   const { id } = await props.params;
 
-  const user = await prismaEdge.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: {
       id: id,
     },

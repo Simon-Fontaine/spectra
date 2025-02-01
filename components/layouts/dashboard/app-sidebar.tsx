@@ -4,7 +4,7 @@ import {
   DASHBOARD_MAIN_NAVIGATION,
   DASHBOARD_ADMIN_NAVIGATION,
   DASHBOARD_SECONDARY_NAVIGATION,
-} from "@/lib/config-ui";
+} from "@/config/config-ui";
 import {
   Sidebar,
   SidebarContent,

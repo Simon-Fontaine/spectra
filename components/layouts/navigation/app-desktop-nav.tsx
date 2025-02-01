@@ -4,8 +4,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { ExternalLinkIcon } from "lucide-react";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
-import { APP_LOGO, APP_NAVIGATION } from "@/lib/config-ui";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { APP_LOGO, APP_NAVIGATION } from "@/config/config-ui";
 
 export function AppDesktopNav() {
   const pathname = usePathname();

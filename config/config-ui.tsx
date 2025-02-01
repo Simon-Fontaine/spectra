@@ -1,10 +1,3 @@
-import Image, { ImageProps } from "next/image";
-import {
-  AppNavigationItem,
-  AppSocialItem,
-  DashboardNavigationGroup,
-  DashboardNavigationItem,
-} from "@/types/config";
 import {
   CalendarSyncIcon,
   HelpCircleIcon,
@@ -14,7 +7,14 @@ import {
   Users2Icon,
   UsersIcon,
 } from "lucide-react";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import {
+  AppNavigationItem,
+  AppSocialItem,
+  DashboardNavigationGroup,
+  DashboardNavigationItem,
+} from "@/types/config";
+import Image, { ImageProps } from "next/image";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 
 export const APP_LOGO = ({ ...props }: Omit<ImageProps, "src" | "alt">) => (
   <Image

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
 import { getSessionFromToken } from "@/lib/auth/session";
 
@@ -22,6 +23,18 @@ export async function GET(request: Request) {
   const rawToken = sessionCookie.split("=")[1];
   const session = await getSessionFromToken(rawToken);
 
-  // Return session or null
-  return NextResponse.json({ session: session ?? null });
+  if (!session) {
+    return NextResponse.json({ session: null });
+  }
+
+  // Clean up the session before sending
+  const { token, csrfSecret, user, ...sessionRest } = session;
+  const { password, ...userRest } = user;
+
+  const cleanedSession = {
+    ...sessionRest,
+    user: userRest,
+  };
+
+  return NextResponse.json({ session: cleanedSession });
 }

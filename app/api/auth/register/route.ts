@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { resend } from "@/lib/email/resend";
 import { apiSignUpSchema } from "@/lib/zod";
 import { VerificationType } from "@prisma/client";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
-import { APP_CONFIG_PRIVATE } from "@/lib/config.private";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 import { consumeInvitation, registerUser } from "@/lib/auth/user";
 import { createVerificationToken } from "@/lib/auth/verification";
 

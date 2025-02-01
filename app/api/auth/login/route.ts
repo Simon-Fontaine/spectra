@@ -10,8 +10,8 @@ import { NextResponse } from "next/server";
 import { verifyUser } from "@/lib/auth/user";
 import { Ratelimit } from "@upstash/ratelimit";
 import { createSession } from "@/lib/auth/session";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
-import { APP_CONFIG_PRIVATE } from "@/lib/config.private";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 
 /**
  * Rate limit: 5 login attempts per 60s per IP.

@@ -1,6 +1,6 @@
-import prismaEdge from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { sha256Hash, randomHex } from "@/lib/utils/hash";
-import { APP_CONFIG_PRIVATE } from "@/lib/config.private";
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 
 interface CreateSessionOptions {
   sessionExpiresInMinutes?: number;
@@ -39,7 +39,7 @@ export async function createSession(
   const now = new Date();
   const expiresAt = new Date(now.getTime() + sessionExpiresInMinutes * 60_000);
 
-  await prismaEdge.session.create({
+  await prisma.session.create({
     data: {
       userId,
       token: hashedSessionToken,
@@ -66,7 +66,7 @@ export async function createSession(
 export async function getSessionFromToken(rawToken: string) {
   const hashedToken = await sha256Hash(rawToken);
 
-  const session = await prismaEdge.session.findUnique({
+  const session = await prisma.session.findUnique({
     where: { token: hashedToken },
     include: { user: true },
   });
@@ -75,7 +75,7 @@ export async function getSessionFromToken(rawToken: string) {
   // Check expiration
   if (session.expiresAt < new Date()) {
     // Session expired, remove from DB
-    await prismaEdge.session.delete({ where: { token: hashedToken } });
+    await prisma.session.delete({ where: { token: hashedToken } });
     return null;
   }
 
@@ -84,7 +84,7 @@ export async function getSessionFromToken(rawToken: string) {
     Date.now() + APP_CONFIG_PRIVATE.SESSION_EXPIRATION_MINUTES * 60_000
   );
 
-  await prismaEdge.session.update({
+  await prisma.session.update({
     where: { id: session.id },
     data: { expiresAt: newExpires },
   });
@@ -115,7 +115,7 @@ export async function getSessionFromRawCookie(cookieHeader: string) {
  */
 export async function deleteSession(rawToken: string) {
   const hashedToken = await sha256Hash(rawToken);
-  await prismaEdge.session.delete({ where: { token: hashedToken } });
+  await prisma.session.delete({ where: { token: hashedToken } });
 }
 
 /**

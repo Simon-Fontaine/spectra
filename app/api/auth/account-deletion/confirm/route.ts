@@ -1,4 +1,4 @@
-import prisma from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { VerificationType } from "@prisma/client";
 import { consumeVerificationToken } from "@/lib/auth/verification";

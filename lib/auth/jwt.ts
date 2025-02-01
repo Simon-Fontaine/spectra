@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
-import { APP_CONFIG_PRIVATE } from "@/lib/config.private";
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 
 /**
  * Secret key for signing/verifying JWT tokens (from env).

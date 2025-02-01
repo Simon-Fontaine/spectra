@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { APP_SOCIALS } from "@/lib/config-ui";
+import { APP_SOCIALS } from "@/config/config-ui";
 import { Button } from "@/components/ui/button";
 import AuthButton from "@/components/layouts/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";

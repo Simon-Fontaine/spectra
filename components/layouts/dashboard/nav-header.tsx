@@ -4,8 +4,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { APP_LOGO } from "@/lib/config-ui";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_LOGO } from "@/config/config-ui";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 
 export function NavHeader() {
   return (

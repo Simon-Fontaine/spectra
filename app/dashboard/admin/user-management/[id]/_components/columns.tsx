@@ -1,14 +1,14 @@
 "use client";
 
 import { formatDate } from "@/lib/utils";
-import { Session } from "@prisma/client";
 import { SessionRowActions } from "./row-actions";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableFilterField } from "@/types/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { CleanSession } from "@/types/models";
 
-export const filterFields: DataTableFilterField<Session>[] = [
+export const filterFields: DataTableFilterField<CleanSession>[] = [
   {
     id: "location",
     label: "Location",
@@ -16,7 +16,7 @@ export const filterFields: DataTableFilterField<Session>[] = [
   },
 ];
 
-export const columns: ColumnDef<Session>[] = [
+export const columns: ColumnDef<CleanSession>[] = [
   {
     id: "select",
     header: ({ table }) => (

@@ -6,10 +6,10 @@ import {
   getUsernameSchema,
 } from "@/lib/zod";
 import { z } from "zod";
-import prismaEdge from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { resend } from "@/lib/email/resend";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { ActionError, adminActionClient } from "@/lib/safe-action";
 
 const updateUserNameSchema = z.object({
@@ -22,7 +22,7 @@ export const handleUserNameUpdate = adminActionClient
   .schema(updateUserNameSchema)
   .action(
     async ({ parsedInput: { userId, displayName } }) => {
-      const existingUser = await prismaEdge.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { id: userId },
       });
 
@@ -30,7 +30,7 @@ export const handleUserNameUpdate = adminActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      await prismaEdge.user.update({
+      await prisma.user.update({
         where: { id: userId },
         data: { displayName },
       });
@@ -67,7 +67,7 @@ export const handleUserUsernameUpdate = adminActionClient
   .schema(updateUserUsernameSchema)
   .action(
     async ({ parsedInput: { userId, username } }) => {
-      const existingUser = await prismaEdge.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { id: userId },
       });
 
@@ -75,7 +75,7 @@ export const handleUserUsernameUpdate = adminActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      const exitingUsernameUser = await prismaEdge.user.findFirst({
+      const exitingUsernameUser = await prisma.user.findFirst({
         where: { username },
       });
 
@@ -83,7 +83,7 @@ export const handleUserUsernameUpdate = adminActionClient
         throw new ActionError("User username already exists.");
       }
 
-      await prismaEdge.user.update({
+      await prisma.user.update({
         where: { id: userId },
         data: { username },
       });
@@ -120,7 +120,7 @@ export const handleUserEmailUpdate = adminActionClient
   .schema(updateUserEmailSchema)
   .action(
     async ({ parsedInput: { userId, email } }) => {
-      const existingUser = await prismaEdge.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { id: userId },
       });
 
@@ -128,7 +128,7 @@ export const handleUserEmailUpdate = adminActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      const exitingEmailUser = await prismaEdge.user.findFirst({
+      const exitingEmailUser = await prisma.user.findFirst({
         where: { email },
       });
 
@@ -136,7 +136,7 @@ export const handleUserEmailUpdate = adminActionClient
         throw new ActionError("User email already exists.");
       }
 
-      await prismaEdge.user.update({
+      await prisma.user.update({
         where: { id: userId },
         data: { email },
       });
@@ -173,7 +173,7 @@ export const handleRevokeSession = adminActionClient
   .schema(revokeUserSessionSchema)
   .action(
     async ({ parsedInput: { userId, sessionId } }) => {
-      const existingUser = await prismaEdge.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { id: userId },
       });
 
@@ -181,7 +181,7 @@ export const handleRevokeSession = adminActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      await prismaEdge.session.delete({
+      await prisma.session.delete({
         where: { id: sessionId },
       });
 
@@ -210,7 +210,7 @@ export const handleBulkRevokeSessions = adminActionClient
   .schema(bulkRevokeUserSessionsSchema)
   .action(
     async ({ parsedInput: { userId, sessionIds } }) => {
-      const existingUser = await prismaEdge.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { id: userId },
       });
 
@@ -218,7 +218,7 @@ export const handleBulkRevokeSessions = adminActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      const { count } = await prismaEdge.session.deleteMany({
+      const { count } = await prisma.session.deleteMany({
         where: {
           id: {
             in: sessionIds,

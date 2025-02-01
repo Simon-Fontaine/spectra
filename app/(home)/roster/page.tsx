@@ -4,9 +4,9 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
-import prismaEdge from "@/lib/dbEdge";
+import prisma from "@/lib/prisma";
 import { TeamRoster } from "@/components/team-roster";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { Announcement } from "@/components/announcement";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RosterPage() {
-  const members = await prismaEdge.user.findMany({
+  const members = await prisma.user.findMany({
     omit: {
       email: true,
       password: true,

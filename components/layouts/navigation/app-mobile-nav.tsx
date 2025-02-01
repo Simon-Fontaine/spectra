@@ -11,7 +11,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { APP_NAVIGATION } from "@/lib/config-ui";
+import { APP_NAVIGATION } from "@/config/config-ui";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
 
 export function AppMobileNav() {

@@ -34,7 +34,7 @@ import { UserWithSessions } from "@/types/models";
 import { useAction } from "next-safe-action/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LoadingButton from "@/components/loading-button";
-import { APP_CONFIG_PUBLIC } from "@/lib/config.public";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   handleUserEmailUpdate,
@@ -389,7 +389,6 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
           <p className="text-sm text-muted-foreground">
             Manage their active sessions and sign out from other devices.
           </p>
-          {/* <SessionDataTable sessions={sessions} pageCount={pageCount} /> */}
           <DataTable
             data={user.sessions}
             columns={columns}
