@@ -5,8 +5,6 @@ export const APP_CONFIG_PUBLIC = {
   APP_DOMAIN: "owspectra.com",
   APP_EMAIL: "noreply@owspectra.com",
   APP_HELP_EMAIL: "help@owspectra.com",
-  APP_URL: process.env.NEXT_PUBLIC_VERCEL_URL || "http://localhost:3000",
-  APP_OG_IMAGE: `${
-    process.env.NEXT_PUBLIC_VERCEL_URL || "http://localhost:3000"
-  }/images/og.png`,
+  APP_URL: "http://owspectra.com",
+  APP_OG_IMAGE: "http://owspectra.com/images/og.png",
 };
