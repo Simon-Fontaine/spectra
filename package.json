@@ -12,7 +12,6 @@
     "@better-fetch/fetch": "^1.1.12",
     "@hookform/resolvers": "^3.10.0",
     "@maxmind/geoip2-node": "^5.0.0",
-    "@neondatabase/serverless": "^0.10.4",
     "@prisma/client": "^6.3.0",
     "@prisma/extension-accelerate": "^1.2.1",
     "@prisma/extension-pulse": "^1.2.0",
