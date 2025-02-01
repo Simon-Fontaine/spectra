@@ -1,10 +1,10 @@
+import { redis } from "@/lib/redis";
 import {
   cleanIpAddress,
   cleanUserAgent,
   getDeviceType,
   getLocationFromIp,
 } from "@/lib/utils/requestDetails";
-import { Redis } from "@upstash/redis";
 import { signInSchema } from "@/lib/zod";
 import { NextResponse } from "next/server";
 import { verifyUser } from "@/lib/auth/user";
@@ -17,7 +17,7 @@ import { APP_CONFIG_PRIVATE } from "@/config/config.private";
  * Rate limit: 5 login attempts per 60s per IP.
  */
 const loginRateLimit = new Ratelimit({
-  redis: Redis.fromEnv(),
+  redis: redis,
   limiter: Ratelimit.slidingWindow(5, "60 s"),
   prefix: "login_rate_limit",
 });

@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { Redis } from "@upstash/redis";
+import { redis } from "@/lib/redis";
 import { NextResponse } from "next/server";
 import { resend } from "@/lib/email/resend";
 import { Ratelimit } from "@upstash/ratelimit";
@@ -12,7 +12,7 @@ import { createVerificationToken } from "@/lib/auth/verification";
  * Rate limit: 3 forgot-password attempts per 60s per IP.
  */
 const forgotPasswordRateLimit = new Ratelimit({
-  redis: Redis.fromEnv(),
+  redis: redis,
   limiter: Ratelimit.slidingWindow(3, "60 s"),
   prefix: "forgot_password_rate_limit",
 });

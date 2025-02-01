@@ -13,6 +13,7 @@ import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
+  Table as TableType,
   TableState,
   VisibilityState,
   flexRender,
@@ -24,16 +25,23 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { getCommonPinningStyles } from "@/lib/utils/table";
-import { DataTablePagination } from "./data-table-pagination";
+import { toast } from "sonner";
+import { Progress } from "../ui/progress";
+import { DownloadIcon } from "lucide-react";
+import LoadingButton from "../loading-button";
+import { exportTableToCSV } from "@/lib/export-csv";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { DataTableFilterField } from "@/types/data-table";
+import { getCommonPinningStyles } from "@/lib/utils/table";
+import { DataTablePagination } from "./data-table-pagination";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterFields?: DataTableFilterField<TData>[];
   initialState?: Partial<TableState>;
+  filename?: string;
+  excludeColumns?: (keyof TData | "select" | "actions")[];
 }
 
 export function DataTable<TData, TValue>({
@@ -41,7 +49,10 @@ export function DataTable<TData, TValue>({
   data,
   filterFields,
   initialState,
-}: DataTableProps<TData, TValue>) {
+  filename = "table",
+  excludeColumns = ["select", "actions"],
+  children,
+}: DataTableProps<TData, TValue> & { children?: React.ReactNode }) {
   const [rowSelection, setRowSelection] = React.useState(
     initialState?.rowSelection ?? {}
   );
@@ -53,6 +64,35 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>(
     initialState?.sorting ?? []
   );
+
+  const [progress, setProgress] = React.useState(0);
+  const [isExporting, setIsExporting] = React.useState(false);
+
+  async function handleExport(table: TableType<TData>) {
+    const rowsCount = table.getRowModel().rows.length;
+
+    setIsExporting(true);
+    setProgress(0);
+
+    try {
+      await exportTableToCSV(table, {
+        filename,
+        excludeColumns,
+        onlySelected: false,
+        chunkSize: rowsCount / 100,
+        onProgress: (ratio) => {
+          setProgress(Math.floor(ratio * 100));
+        },
+      });
+
+      toast.success(`${rowsCount} row(s) exported successfully.`);
+    } catch (err) {
+      console.error("Export CSV Error:", err);
+      toast.error("Failed to export users.");
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   const table = useReactTable({
     data,
@@ -79,7 +119,24 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="grid w-full space-y-2.5 overflow-auto">
-      <DataTableToolbar table={table} filterFields={filterFields} />
+      <DataTableToolbar table={table} filterFields={filterFields}>
+        <div className="flex items-center gap-2">
+          {children}
+          <LoadingButton
+            variant="outline"
+            size="sm"
+            type="button"
+            pendingText="Exporting"
+            pending={isExporting}
+            disabled={table.getRowModel().rows.length === 0}
+            onClick={() => handleExport(table)}
+            className="hidden sm:flex"
+          >
+            <DownloadIcon className="size-4" aria-hidden="true" />
+            Export
+          </LoadingButton>
+        </div>
+      </DataTableToolbar>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -144,6 +201,7 @@ export function DataTable<TData, TValue>({
       <div className="flex flex-col gap-2.5">
         <DataTablePagination table={table} />
       </div>
+      {isExporting && <Progress value={progress} />}
     </div>
   );
 }

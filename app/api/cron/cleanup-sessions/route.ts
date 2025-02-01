@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    if (
+      request.headers.get("Authorization") !==
+      `Bearer ${process.env.CRON_SECRET}`
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const now = new Date();
     const result = await prisma.session.deleteMany({
       where: {

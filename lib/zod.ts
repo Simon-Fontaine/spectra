@@ -99,6 +99,18 @@ export const getRoleSchema = () => z.nativeEnum(Role);
 
 export const getSpecialtySchema = () => z.nativeEnum(Specialty);
 
+export const inviteUserSchema = z
+  .object({
+    email: getEmailSchema(),
+    expiresAt: z
+      .date()
+      .default(() => new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)),
+  })
+  .refine((data) => data.expiresAt > new Date(), {
+    message: "Expiration date must be in the future",
+    path: ["expiresAt"],
+  });
+
 export const signUpSchema = z
   .object({
     email: getEmailSchema(),
