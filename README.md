@@ -1,42 +1,121 @@
 # Spectra Self-Auth
 
-A Next.js application demonstrating custom authentication using sessions, CSRF protection, and email verification.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
+**Spectra Self-Auth** is a **Next.js 15+** application designed primarily for Overwatch 2 e-sport **team management**—including rosters, schedules, and admin tooling—while showcasing a robust, **reusable** custom authentication system. Its modular auth logic (featuring sessions, CSRF tokens, email verification, and rate-limiting) can be easily **ported** or **adapted** into other Next.js projects.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)  
+- [Features](#features)  
+- [Tech Stack](#tech-stack)  
+- [Project Structure](#project-structure)  
+- [Getting Started](#getting-started)  
+  - [Requirements](#requirements)  
+  - [1. Clone the Repository](#1-clone-the-repository)  
+  - [2. Install Dependencies](#2-install-dependencies)  
+  - [3. Set Up Environment Variables](#3-set-up-environment-variables)  
+  - [4. Run Database Migrations](#4-run-database-migrations)  
+  - [5. Start the Development Server](#5-start-the-development-server)  
+- [Scripts](#scripts)  
+- [Deployment](#deployment)  
+- [Authentication Flow](#authentication-flow)  
+- [Security Considerations](#security-considerations)  
+- [Contributing](#contributing)  
+- [License](#license)  
+- [Additional Resources](#additional-resources)
+
+---
 
 ## Overview
 
-Spectra Self-Auth is a full-stack authentication system built entirely within Next.js (15+). It facilitates user registration, login, session management, rate-limiting for login attempts, and email verification, ensuring a secure and seamless user experience.
+**Spectra Self-Auth** is a Next.js website that manages an Overwatch 2 e-sport team—from rosters to user roles and schedules—backed by a **bespoke, self-contained auth** system. While the site itself is dedicated to Overwatch 2 management, the **authentication** logic (short-lived sessions, email verification, etc.) is **modular** enough for you to lift and integrate into your own Next.js applications.
+
+**Key Highlights**:
+
+- Tailored for Overwatch 2 team management but adaptable to any team-based or membership scenario.
+- **Reusable** authentication layer that uses short-lived sessions, rate-limiting, and secure email verification.
+- Offers advanced admin features like user role management, invite-only registration, session revocation, and more.
+
+---
 
 ## Features
 
-- **Registration & Login**  
-  Users can create accounts and log in. Passwords are securely hashed using [bcrypt](https://github.com/kelektiv/node.bcrypt.js).
+1. **Team Management**  
+   - Create and maintain Overwatch 2 rosters, including roles (DPS, Tank, Support), coaches, and subs.
+   - Admin dashboards to oversee player stats, replays, schedules, etc.
 
-- **Session Management**  
-  Short-lived session tokens are stored in `httpOnly` cookies, providing secure session handling without the need for refresh tokens.
+2. **Custom Auth System**  
+   - Registration with optional invite-only workflow.
+   - Passwords hashed via [bcrypt](https://github.com/kelektiv/node.bcrypt.js).
+   - **Email verification** links and forced email validation.
 
-- **CSRF Protection**  
-  A CSRF token is generated with each session to mitigate cross-site request forgery attacks.
+3. **Sessions & CSRF**  
+   - Short-lived **httpOnly** session cookies with **sliding expiration**.
+   - Per-session CSRF token to thwart cross-site request forgery attacks.
 
-- **Rate Limiting**  
-[Upstash Ratelimit](https://github.com/upstash/ratelimit) limits the number of login attempts from the same IP address, enhancing security against brute-force attacks.
+4. **Rate Limiting**  
+   - [Upstash Ratelimit](https://github.com/upstash/ratelimit-js) protects against brute-force login attempts.
 
-- **Email Verification**  
-  Newly registered users receive an email with a verification link. Upon verification, the user’s email is marked as verified.
+5. **GeoIP & Analytics** *(Optional)*  
+   - Integrates [MaxMind GeoIP2](https://github.com/maxmind/GeoIP2-node) for approximate user location.
 
-- **GeoIP Lookup**  
-(Optional) Utilizes [MaxMind GeoIP2](https://github.com/maxmind/GeoIP2-node) to track approximate user location (city, country) in the session record.
+6. **Email Services**  
+   - Transactional emails managed by [Resend](https://resend.com).
+
+---
 
 ## Tech Stack
 
-- **Next.js 15+** (App Router)
-- **TypeScript**
-- **Prisma** with PostgreSQL
-- **Bcrypt** for password hashing
-- **[Upstash Ratelimit](https://github.com/upstash/ratelimit)** and **[Redis](https://github.com/upstash/redis)** for rate limiting
-- **GeoIP2** for location lookups (optional)
-- **Resend** for transactional emails
+- **Next.js 15+** (App Router)  
+- **TypeScript**  
+- **Prisma** + PostgreSQL  
+- **Bcrypt** for password hashing  
+- **Upstash** Redis & Ratelimit for login security  
+- **GeoIP2** for optional location lookups  
+- **Resend** for emails  
+- **Tailwind CSS** for UI  
+- **Zod** for schema validation  
+- Deployed on **Vercel** or any Next.js-friendly platform
+
+---
+
+## Project Structure
+
+Here's a quick look at the repo:
+
+```bash
+spectra-self-auth/
+├── app/                    # Next.js App Router 
+│   ├── (auth)/             # Auth pages (sign-in, sign-up, reset password, etc.)
+│   ├── (home)/             # Public pages (news, roster, etc.)
+│   ├── dashboard/          # Protected admin/team management
+│   ├── api/                # Route handlers (e.g., /api/auth/login)
+│   ├── middleware.ts       # Session & auth checks
+│   └── ...
+├── components/             # UI components (forms, nav, etc.)
+├── hooks/                  # Custom React hooks
+├── lib/                    # Core utilities (prisma, redis, email, auth logic, etc.)
+├── prisma/                 # Prisma schema & migrations
+├── public/                 # Static assets
+├── types/                  # TS type definitions
+├── .env.example
+├── package.json
+├── tailwind.config.ts
+└── README.md
+```
+
+---
 
 ## Getting Started
+
+### Requirements
+
+1. **Node.js 18+**  
+2. **PostgreSQL** (local or hosted)  
+3. **Upstash Redis** (optional but recommended for rate-limiting)
 
 ### 1. Clone the Repository
 
@@ -46,38 +125,31 @@ git clone https://github.com/Simon-Fontaine/spectra-self-auth.git
 
 ### 2. Install Dependencies
 
-Navigate to the project directory and install the necessary packages:
-
 ```bash
 cd spectra-self-auth
 npm install
-# or
-yarn install
-# or
-pnpm install
+# or yarn install / pnpm install
 ```
 
 ### 3. Set Up Environment Variables
 
-Create a `.env` or `.env.local` file in the project root and populate it with the following variables:
+Create a `.env.local` (or use `.env.example` as reference):
 
 ```env
-DATABASE_URL="your-postgresql-connection-string"
-UPSTASH_REDIS_REST_TOKEN="your-upstash-redis-rest-token"
-UPSTASH_REDIS_REST_URL="your-upstash-redis-rest-url"
+DATABASE_URL="your-postgres-url"
+UPSTASH_REDIS_REST_TOKEN="your-upstash-redis-token"
+UPSTASH_REDIS_REST_URL="your-upstash-redis-url"
 BLOB_READ_WRITE_TOKEN="your-vercel-blob-read-write-token"
 JWT_SECRET="your-jwt-secret"
-JWT_SISUER="your-jwt-issuer"
+JWT_ISSUER="your-jwt-issuer"
 JWT_AUDIENCE="your-jwt-audience"
 RESEND_API_KEY="your-resend-api-key"
 PULSE_API_KEY="(optional) for Prisma Pulse"
+REGISTRATION_ENABLED=true
+REGISTRATION_INVITE_ONLY=true
 ```
 
-**Note:** Replace the placeholder values with your actual configuration details.
-
 ### 4. Run Database Migrations
-
-Apply the Prisma migrations to set up your database schema:
 
 ```bash
 npx prisma migrate deploy
@@ -85,245 +157,96 @@ npx prisma migrate deploy
 
 ### 5. Start the Development Server
 
-Launch the Next.js development server:
-
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
+Open [http://localhost:3000](http://localhost:3000) to explore.
+
+---
 
 ## Scripts
 
-- **`npm run dev`**: Starts the local development server.
-- **`npm run build`**: Builds the Next.js production bundles.
-- **`npm run start`**: Runs the production build.
-- **`npm run lint`**: Lints the codebase using ESLint.
+| Script             | Description                                           |
+|--------------------|-------------------------------------------------------|
+| **`npm run dev`**  | Starts the local dev server (with turbopack).         |
+| **`npm run build`**| Builds production bundles for Next.js.               |
+| **`npm run start`**| Runs the app in production mode.                      |
+| **`npm run lint`** | Lints the code with Biome/ESLint.                     |
+
+---
 
 ## Deployment
 
-Deploy Spectra Self-Auth on [Vercel](https://vercel.com) or any platform that supports Next.js 15+. Ensure all environment variables are correctly set in the hosting environment to match your `.env` configuration.
+You can deploy this project to **Vercel** or any Next.js-supporting platform:
+
+1. Ensure environment variables (in `.env.*`) are set in your host’s config.  
+2. Run build scripts (`npm run build`) or rely on your host’s auto-build.  
+3. Confirm your **database**, **redis** config, and **email** provider keys.  
+
+Once deployed, your Overwatch 2 team management site, along with its robust custom authentication, is live.
+
+---
+
+## Authentication Flow
+
+1. **Registration**  
+   - Invite-based or open registration, depending on environment config.
+   - User picks a unique username, email, and password.
+
+2. **Email Verification**  
+   - A verification link is sent to the user’s email.
+   - Clicking it confirms the user’s email in the database.
+
+3. **Login**  
+   - On successful credential check, a short-lived session cookie + CSRF token is issued.
+
+4. **Session Management**  
+   - Sessions extend automatically if the user is active but expire after prolonged inactivity.
+   - CSRF tokens protect state-changing requests.
+
+5. **Logout**  
+   - Session is invalidated server-side, and client cookies are cleared.
+
+---
+
+## Security Considerations
+
+- **Password Hashing**: Uses bcrypt to hash passwords.  
+- **HTTP-Only Cookies**: Session tokens are not accessible to JavaScript.  
+- **CSRF Protection**: Each session has a unique CSRF secret validated on requests.  
+- **Rate Limiting**: Helps thwart brute-force attempts on login endpoints.  
+- **Sliding Expiration**: Sessions refresh on activity but eventually expire if idle.
+
+---
 
 ## Contributing
 
-Contributions are welcome! Follow these steps to contribute:
+Contributions are welcome! Please:
 
-1. **Fork the Repository**  
-   Click the "Fork" button at the top-right corner of the repository page.
+1. **Fork** the repository.  
+2. **Create a branch** with your feature/fix.  
+3. **Make changes** and commit.  
+4. **Open a PR** to merge into `main`.
 
-2. **Create a New Feature Branch**
+Thank you for helping improve **Spectra Self-Auth**!
 
-   ```bash
-   git checkout -b feature-name
-   ```
-
-3. **Make Your Changes and Commit**
-
-   ```bash
-   git commit -m "Add some feature"
-   ```
-
-4. **Push to the Branch**
-
-   ```bash
-   git push origin feature-name
-   ```
-
-5. **Open a Pull Request**  
-   Navigate to the repository on GitHub and open a pull request from your feature branch.
+---
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE) &mdash; feel free to modify and use it for personal or commercial projects.
+This project is licensed under the [MIT License](./LICENSE). Feel free to modify or adapt for commercial and personal use.
 
 ---
 
 ## Additional Resources
 
-- [Upstash Ratelimit](https://github.com/upstash/ratelimit)
-- [Redis](https://github.com/upstash/redis)
-- [MaxMind GeoIP2](https://github.com/maxmind/GeoIP2-node)
-- [Vercel](https://vercel.com)
+- [Upstash Ratelimit](https://github.com/upstash/ratelimit-js)  
+- [Redis](https://github.com/upstash/redis-js)  
+- [MaxMind GeoIP2](https://github.com/maxmind/GeoIP2-node)  
+- [Vercel](https://vercel.com)  
 - [bcrypt](https://github.com/kelektiv/node.bcrypt.js)
 
 ---
 
-## Project Structure
-
-Here's a brief overview of the project structure to help you navigate the codebase:
-
-```bash
-Directory structure:
-└── simon-fontaine-spectra-self-auth/
-    ├── README.md
-    ├── LICENCE
-    ├── components.json
-    ├── eslint.config.mjs
-    ├── middleware.ts
-    ├── next.config.ts
-    ├── package.json
-    ├── pnpm-lock.yaml
-    ├── postcss.config.mjs
-    ├── tailwind.config.ts
-    ├── tsconfig.json
-    ├── .env.example
-    ├── app/
-    │   ├── globals.css
-    │   ├── layout.tsx
-    │   ├── (auth)/
-    │   │   ├── forgot-password/
-    │   │   │   └── page.tsx
-    │   │   ├── reset-password/
-    │   │   │   └── page.tsx
-    │   │   ├── sign-in/
-    │   │   │   └── page.tsx
-    │   │   └── sign-up/
-    │   │       └── page.tsx
-    │   ├── (home)/
-    │   │   ├── layout.tsx
-    │   │   └── page.tsx
-    │   ├── api/
-    │   │   └── auth/
-    │   │       ├── account-deletion/
-    │   │       │   ├── route.ts
-    │   │       │   └── confirm/
-    │   │       │       └── route.ts
-    │   │       ├── email/
-    │   │       │   ├── change/
-    │   │       │   │   ├── route.ts
-    │   │       │   │   └── confirm/
-    │   │       │   │       └── route.ts
-    │   │       │   └── verify/
-    │   │       │       └── route.ts
-    │   │       ├── login/
-    │   │       │   └── route.ts
-    │   │       ├── logout/
-    │   │       │   └── route.ts
-    │   │       ├── password/
-    │   │       │   ├── forgot/
-    │   │       │   │   └── route.ts
-    │   │       │   └── reset/
-    │   │       │       └── route.ts
-    │   │       ├── register/
-    │   │       │   └── route.ts
-    │   │       └── session/
-    │   │           └── route.ts
-    │   └── dashboard/
-    │       └── page.tsx
-    ├── components/
-    │   ├── announcement.tsx
-    │   ├── loading-button.tsx
-    │   ├── page-header.tsx
-    │   ├── theme-switcher.tsx
-    │   ├── forms/
-    │   │   ├── forgotpassword-form.tsx
-    │   │   ├── resetpassword-form.tsx
-    │   │   ├── signin-form.tsx
-    │   │   └── signup-form.tsx
-    │   ├── layouts/
-    │   │   ├── app-footer.tsx
-    │   │   ├── app-header.tsx
-    │   │   ├── auth-button.tsx
-    │   │   ├── user-menu.tsx
-    │   │   └── navigation/
-    │   │       ├── app-desktop-nav.tsx
-    │   │       └── app-mobile-nav.tsx
-    │   └── ui/
-    │       ├── alert-dialog.tsx
-    │       ├── alert.tsx
-    │       ├── avatar.tsx
-    │       ├── badge.tsx
-    │       ├── breadcrumb.tsx
-    │       ├── button.tsx
-    │       ├── card.tsx
-    │       ├── drawer.tsx
-    │       ├── dropdown-menu.tsx
-    │       ├── form.tsx
-    │       ├── input.tsx
-    │       ├── label.tsx
-    │       ├── pagination.tsx
-    │       ├── separator.tsx
-    │       ├── sheet.tsx
-    │       ├── sidebar.tsx
-    │       ├── skeleton.tsx
-    │       ├── sonner.tsx
-    │       ├── toast.tsx
-    │       ├── toaster.tsx
-    │       └── tooltip.tsx
-    ├── hooks/
-    │   ├── use-mobile.tsx
-    │   ├── use-toast.ts
-    │   └── useSession.ts
-    ├── lib/
-    │   ├── config.tsx
-    │   ├── dbEdge.ts
-    │   ├── dbRealtime.ts
-    │   ├── redis.ts
-    │   ├── utils.ts
-    │   ├── zod.ts
-    │   ├── auth/
-    │   │   ├── get-session.ts
-    │   │   ├── jwt.ts
-    │   │   ├── session.ts
-    │   │   ├── user.ts
-    │   │   └── verification.ts
-    │   ├── email/
-    │   │   └── resend.ts
-    │   └── utils/
-    │       ├── hash.ts
-    │       └── requestDetails.ts
-    ├── prisma/
-    │   ├── schema.prisma
-    │   └── migrations/
-    │       ├── migration_lock.toml
-    │       ├── 20250130170851_init/
-    │       │   └── migration.sql
-    │       ├── 20250130171241_unique_verification_tokens/
-    │       │   └── migration.sql
-    │       └── 20250130171355_unique_verification_new_email/
-    │           └── migration.sql
-    ├── providers/
-    │   └── theme-provider.tsx
-    ├── public/
-    │   └── images/
-    └── types/
-        └── models.ts
-```
-
-### Key Directories and Files
-
-- **`app/`**: Contains the main application pages and API routes.
-- **`components/`**: Reusable React components.
-- **`hooks/`**: Custom React hooks.
-- **`lib/`**: Utility functions, configuration, and library integrations.
-- **`prisma/`**: Prisma schema and migration files.
-- **`types/`**: TypeScript type definitions.
-
-## Authentication Flow
-
-1. **Registration**
-   - Users register by providing a username, email, and password.
-   - Upon successful registration, an email verification link is sent to the user's email address.
-
-2. **Email Verification**
-   - Users verify their email by clicking the verification link.
-   - This action marks the user's email as verified in the database.
-
-3. **Login**
-   - Users log in using their username/email and password.
-   - Upon successful authentication, a session token is created and stored in an `httpOnly` cookie.
-
-4. **Session Management**
-   - Sessions are managed using short-lived tokens with sliding expiration.
-   - CSRF tokens are generated and validated for state-changing requests.
-
-5. **Logout**
-   - Users can log out, which invalidates their session and clears relevant cookies.
-
-## Security Considerations
-
-- **Password Hashing**: Passwords are hashed using bcrypt before storage.
-- **HTTP-Only Cookies**: Session tokens are stored in `httpOnly` cookies to prevent access via JavaScript.
-- **CSRF Protection**: CSRF tokens are implemented to protect against cross-site request forgery.
-- **Rate Limiting**: Login attempts are rate-limited to mitigate brute-force attacks.
-- **Email Verification**: Ensures that users verify their email addresses before gaining full access.
+Enjoy your **Overwatch 2** team management site with fully customizable authentication! If you run into any issues, feel free to open an [issue](https://github.com/Simon-Fontaine/spectra-self-auth/issues) or discussion.
