@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { deleteSession, validateCSRF } from "@/lib/auth/session";
+import { NextResponse } from "next/server";
 
 /**
  * Logs out a user by deleting session & clearing cookies.
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     if (!cookieHeader) {
       return NextResponse.json(
         { success: false, error: "No cookies." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     if (!sessionCookie) {
       return NextResponse.json(
         { success: false, error: "No session token." },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const rawToken = sessionCookie.split("=")[1];
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     if (!valid) {
       return NextResponse.json(
         { success: false, error: "CSRF check failed." },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     console.error("LOGOUT:", err);
     return NextResponse.json(
       { success: false, error: "Logout failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

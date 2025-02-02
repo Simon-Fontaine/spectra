@@ -1,12 +1,12 @@
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { createVerificationToken } from "@/lib/auth/verification";
+import { resend } from "@/lib/email/resend";
 import prisma from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { NextResponse } from "next/server";
-import { resend } from "@/lib/email/resend";
-import { Ratelimit } from "@upstash/ratelimit";
-import { VerificationType } from "@prisma/client";
-import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { cleanIpAddress } from "@/lib/utils/requestDetails";
-import { createVerificationToken } from "@/lib/auth/verification";
+import { VerificationType } from "@prisma/client";
+import { Ratelimit } from "@upstash/ratelimit";
+import { NextResponse } from "next/server";
 
 /**
  * Rate limit: 3 forgot-password attempts per 60s per IP.
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     if (!success) {
       return NextResponse.json(
         { success: false, error: "Too many attempts." },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     if (!email) {
       return NextResponse.json(
         { success: false, error: "Missing email." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     const token = await createVerificationToken(
       user.id,
       VerificationType.PASSWORD_RESET,
-      1
+      1,
     );
     const resetUrl = `${APP_CONFIG_PUBLIC.APP_URL}/reset-password?token=${token}`;
 
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     console.error("FORGOT-PASSWORD:", err);
     return NextResponse.json(
       { success: false, error: "Request failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

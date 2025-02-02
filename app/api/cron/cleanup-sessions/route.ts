@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   try {
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     ) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     console.error("CRON CLEANUP ERROR:", error);
     return NextResponse.json(
       { success: false, error: "Failed to clean up sessions" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

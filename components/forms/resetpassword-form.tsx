@@ -1,7 +1,5 @@
 "use client";
 
-import { z } from "zod";
-import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -17,16 +15,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import LoadingButton from "../loading-button";
+import { cn } from "@/lib/utils";
 import { resetPasswordSchema } from "@/lib/zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import LoadingButton from "../loading-button";
 
 export function ResetPasswordForm({
   token,

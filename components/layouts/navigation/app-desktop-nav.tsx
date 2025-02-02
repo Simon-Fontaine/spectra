@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { ExternalLinkIcon } from "lucide-react";
-import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { APP_LOGO, APP_NAVIGATION } from "@/config/config-ui";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { cn } from "@/lib/utils";
+import { ExternalLinkIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function AppDesktopNav() {
   const pathname = usePathname();
@@ -19,16 +19,16 @@ export function AppDesktopNav() {
         </span>
       </Link>
       <nav className="flex items-center gap-4 text-sm xl:gap-6">
-        {APP_NAVIGATION.map((item, index) =>
+        {APP_NAVIGATION.map((item) =>
           item.href && !item.disabled ? (
             <Link
-              key={index}
+              key={item.title}
               href={item.href}
               className={cn(
                 "transition-colors hover:text-foreground/80",
                 pathname.endsWith(item.href)
                   ? "text-foreground"
-                  : "text-foreground/80"
+                  : "text-foreground/80",
               )}
               target={item.external ? "_blank" : undefined}
               aria-label={item.title}
@@ -41,7 +41,7 @@ export function AppDesktopNav() {
                 {item.external ? <ExternalLinkIcon className="size-4" /> : null}
               </div>
             </Link>
-          ) : null
+          ) : null,
         )}
       </nav>
     </div>

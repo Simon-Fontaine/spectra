@@ -23,7 +23,7 @@ const parsedPrivateEnv = privateEnvSchema.safeParse(process.env);
 if (!parsedPrivateEnv.success) {
   console.error(
     "❌ Invalid private environment variables",
-    parsedPrivateEnv.error.format()
+    parsedPrivateEnv.error.format(),
   );
   throw new Error("Invalid private environment variables");
 }

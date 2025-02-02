@@ -1,13 +1,13 @@
 "use client";
 
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import {
   SidebarGroup,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { type LucideIcon } from "lucide-react";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import type { LucideIcon } from "lucide-react";
 
 export function NavSecondary({
   items,

@@ -38,8 +38,8 @@ export function DataTableColumnHeader<TData, TValue>({
           column.getIsSorted() === "desc"
             ? descValue
             : column.getIsSorted() === "asc"
-            ? ascValue
-            : undefined
+              ? ascValue
+              : undefined
         }
         onValueChange={(value) => {
           if (value === ascValue) column.toggleSorting(false);
@@ -52,8 +52,8 @@ export function DataTableColumnHeader<TData, TValue>({
             column.getIsSorted() === "desc"
               ? "Sorted descending. Click to sort ascending."
               : column.getIsSorted() === "asc"
-              ? "Sorted ascending. Click to sort descending."
-              : "Not sorted. Click to sort ascending."
+                ? "Sorted ascending. Click to sort descending."
+                : "Not sorted. Click to sort ascending."
           }
           className="-ml-3 h-8 w-fit border-none text-xs hover:bg-accent hover:text-accent-foreground data-[state=open]:bg-accent [&>svg:last-child]:hidden"
         >

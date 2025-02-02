@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function NotFound() {
   const router = useRouter();
@@ -15,11 +15,10 @@ export default function NotFound() {
 
         <div className="space-y-4">
           <h2 className="font-heading text-2xl md:text-3xl font-bold tracking-tight">
-            Something&apos;s missing
+            Something's missing
           </h2>
           <p className="text-muted-foreground max-w-sm mx-auto">
-            Sorry, the page you are looking for doesn&apos;t exist or has been
-            moved.
+            Sorry, the page you are looking for doesn't exist or has been moved.
           </p>
         </div>
 

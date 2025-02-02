@@ -1,5 +1,5 @@
-import { WebServiceClient } from "@maxmind/geoip2-node";
 import { APP_CONFIG_PRIVATE } from "@/config/config.private";
+import { WebServiceClient } from "@maxmind/geoip2-node";
 
 // Type definitions
 interface GeoLocation {
@@ -35,7 +35,7 @@ function getGeoIpClient(): WebServiceClient {
     APP_CONFIG_PRIVATE.MAXMIND_LICENSE_KEY,
     {
       host: "geolite.info",
-    }
+    },
   );
 
   return geoipClient;

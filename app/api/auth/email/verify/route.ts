@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { VerificationType } from "@prisma/client";
 import { markEmailVerified } from "@/lib/auth/user";
 import { consumeVerificationToken } from "@/lib/auth/verification";
+import { VerificationType } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 /**
  * Verifies user email with the given token.
@@ -14,18 +14,18 @@ export async function GET(request: Request) {
     if (!token) {
       return NextResponse.json(
         { success: false, error: "No token." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const verification = await consumeVerificationToken(
       token,
-      VerificationType.EMAIL_VERIFICATION
+      VerificationType.EMAIL_VERIFICATION,
     );
     if (!verification) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired token." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     console.error("EMAIL-VERIFY:", err);
     return NextResponse.json(
       { success: false, error: "Verification failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import {
-  DASHBOARD_MAIN_NAVIGATION,
-  DASHBOARD_ADMIN_NAVIGATION,
-  DASHBOARD_SECONDARY_NAVIGATION,
-} from "@/config/config-ui";
+import { NavAdmin } from "@/components/layouts/dashboard/nav-admin";
+import { NavHeader } from "@/components/layouts/dashboard/nav-header";
+import { NavMain } from "@/components/layouts/dashboard/nav-main";
+import { NavSecondary } from "@/components/layouts/dashboard/nav-secondary";
+import { UserMenu } from "@/components/layouts/user-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -13,14 +13,14 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  DASHBOARD_ADMIN_NAVIGATION,
+  DASHBOARD_MAIN_NAVIGATION,
+  DASHBOARD_SECONDARY_NAVIGATION,
+} from "@/config/config-ui";
+import type { SessionWithUser } from "@/types/models";
 import { Role } from "@prisma/client";
-import { ComponentProps } from "react";
-import { SessionWithUser } from "@/types/models";
-import { UserMenu } from "@/components/layouts/user-menu";
-import { NavMain } from "@/components/layouts/dashboard/nav-main";
-import { NavAdmin } from "@/components/layouts/dashboard/nav-admin";
-import { NavHeader } from "@/components/layouts/dashboard/nav-header";
-import { NavSecondary } from "@/components/layouts/dashboard/nav-secondary";
+import type { ComponentProps } from "react";
 
 export function AppSidebar({
   session,

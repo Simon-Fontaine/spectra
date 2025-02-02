@@ -1,4 +1,4 @@
-import { type Table } from "@tanstack/react-table";
+import type { Table } from "@tanstack/react-table";
 
 export interface ExportTableToCSVOptions<TData> {
   filename?: string;
@@ -10,7 +10,7 @@ export interface ExportTableToCSVOptions<TData> {
 
 export async function exportTableToCSV<TData>(
   table: Table<TData>,
-  options: ExportTableToCSVOptions<TData> = {}
+  options: ExportTableToCSVOptions<TData> = {},
 ): Promise<void> {
   const {
     filename = "table",
@@ -24,7 +24,8 @@ export async function exportTableToCSV<TData>(
     .getAllLeafColumns()
     .map((col) => col.id)
     .filter(
-      (id) => !excludeColumns.includes(id as keyof TData | "select" | "actions")
+      (id) =>
+        !excludeColumns.includes(id as keyof TData | "select" | "actions"),
     );
 
   if (headers.length === 0) {

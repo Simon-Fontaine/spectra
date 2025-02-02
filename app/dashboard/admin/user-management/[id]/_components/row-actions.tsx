@@ -1,8 +1,8 @@
-import { useAction } from "next-safe-action/hooks";
-import { handleRevokeSession } from "../_lib/actions";
-import { toast } from "sonner";
-import { useRef } from "react";
 import LoadingButton from "@/components/loading-button";
+import { useAction } from "next-safe-action/hooks";
+import { useRef } from "react";
+import { toast } from "sonner";
+import { handleRevokeSession } from "../_lib/actions";
 
 export const SessionRowActions = ({
   userId,

@@ -39,14 +39,14 @@ const createStringSchema = (options: {
   if (minLength !== undefined) {
     schema = schema.min(
       minLength,
-      validationMessages.length.min(field, minLength)
+      validationMessages.length.min(field, minLength),
     );
   }
 
   if (maxLength !== undefined) {
     schema = schema.max(
       maxLength,
-      validationMessages.length.max(field, maxLength)
+      validationMessages.length.max(field, maxLength),
     );
   }
 

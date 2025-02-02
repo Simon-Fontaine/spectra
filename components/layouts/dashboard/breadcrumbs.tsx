@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { usePathname } from "next/navigation";
+import React from "react";
 
 export function Breadcrumbs() {
   const pathname = usePathname();
@@ -24,7 +24,7 @@ export function Breadcrumbs() {
 
   const generateUrl = (index: number) => {
     if (index === -1) return "/dashboard";
-    return "/dashboard/" + segments.slice(0, index + 1).join("/");
+    return `/dashboard/${segments.slice(0, index + 1).join("/")}`;
   };
 
   const formatSegment = (segment: string) => {

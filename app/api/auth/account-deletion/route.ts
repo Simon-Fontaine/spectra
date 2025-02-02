@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { resend } from "@/lib/email/resend";
-import { VerificationType } from "@prisma/client";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { getSessionFromRawCookie } from "@/lib/auth/session";
 import { createVerificationToken } from "@/lib/auth/verification";
+import { resend } from "@/lib/email/resend";
+import { VerificationType } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 /**
  * Sends a confirmation email for account deletion.
@@ -16,14 +16,14 @@ export async function POST(request: Request) {
     if (!session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     const token = await createVerificationToken(
       session.userId,
       VerificationType.ACCOUNT_DELETION,
-      24
+      24,
     );
 
     const confirmUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/account-deletion/confirm?token=${token}`;
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     console.error("ACCOUNT-DELETION:", err);
     return NextResponse.json(
       { success: false, error: "Request failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

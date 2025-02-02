@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { VerificationType } from "@prisma/client";
 import { updateUserPassword } from "@/lib/auth/user";
 import { consumeVerificationToken } from "@/lib/auth/verification";
+import { VerificationType } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 /**
  * Resets the user's password if token is valid.
@@ -16,18 +16,18 @@ export async function POST(request: Request) {
     if (!token || !newPassword) {
       return NextResponse.json(
         { success: false, error: "Missing fields." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const verification = await consumeVerificationToken(
       token,
-      VerificationType.PASSWORD_RESET
+      VerificationType.PASSWORD_RESET,
     );
     if (!verification) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired token." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     console.error("RESET-PASSWORD:", err);
     return NextResponse.json(
       { success: false, error: "Reset failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

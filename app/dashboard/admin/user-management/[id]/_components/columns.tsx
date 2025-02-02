@@ -1,12 +1,12 @@
 "use client";
 
-import { formatDate } from "@/lib/utils";
-import { SessionRowActions } from "./row-actions";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableFilterField } from "@/types/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
-import { CleanSession } from "@/types/models";
+import { Checkbox } from "@/components/ui/checkbox";
+import { formatDate } from "@/lib/utils";
+import type { DataTableFilterField } from "@/types/data-table";
+import type { CleanSession } from "@/types/models";
+import type { ColumnDef } from "@tanstack/react-table";
+import { SessionRowActions } from "./row-actions";
 
 export const filterFields: DataTableFilterField<CleanSession>[] = [
   {

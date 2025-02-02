@@ -1,3 +1,7 @@
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { createSession } from "@/lib/auth/session";
+import { verifyUser } from "@/lib/auth/user";
 import { redis } from "@/lib/redis";
 import {
   cleanIpAddress,
@@ -6,12 +10,8 @@ import {
   getLocationFromIp,
 } from "@/lib/utils/requestDetails";
 import { signInSchema } from "@/lib/zod";
-import { NextResponse } from "next/server";
-import { verifyUser } from "@/lib/auth/user";
 import { Ratelimit } from "@upstash/ratelimit";
-import { createSession } from "@/lib/auth/session";
-import { APP_CONFIG_PUBLIC } from "@/config/config.public";
-import { APP_CONFIG_PRIVATE } from "@/config/config.private";
+import { NextResponse } from "next/server";
 
 /**
  * Rate limit: 5 login attempts per 60s per IP.
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     if (!success) {
       return NextResponse.json(
         { success: false, error: "Too many attempts." },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         { success: false, error: parsed.error.message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json(
         { success: false, error: "Invalid credentials." },
-        { status: 401 }
+        { status: 401 },
       );
     }
     if (!user.isEmailVerified) {
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
           success: false,
           error: "Email not verified. Check your inbox.",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       location,
       {
         sessionExpiresInMinutes: APP_CONFIG_PRIVATE.SESSION_EXPIRATION_MINUTES,
-      }
+      },
     );
 
     // Prepare response
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
     console.error("LOGIN:", err);
     return NextResponse.json(
       { success: false, error: "Login failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

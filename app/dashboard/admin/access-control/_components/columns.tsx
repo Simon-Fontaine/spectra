@@ -1,12 +1,11 @@
 "use client";
 
-import { formatDate } from "@/lib/utils";
-// import { UserRowActions } from "./row-actions";
-import { Invitation } from "@prisma/client";
-import { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DataTableFilterField } from "@/types/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { Checkbox } from "@/components/ui/checkbox";
+import { formatDate } from "@/lib/utils";
+import type { DataTableFilterField } from "@/types/data-table";
+import type { Invitation } from "@prisma/client";
+import type { ColumnDef } from "@tanstack/react-table";
 import { InvitationRowActions } from "./row-actions";
 
 export const filterFields: DataTableFilterField<Invitation>[] = [
@@ -28,7 +27,7 @@ export const columns: ColumnDef<Invitation>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
-        className="translate-y-[2px]"
+        className="translate-y-0.5"
       />
     ),
     cell: ({ row }) => (
@@ -36,7 +35,7 @@ export const columns: ColumnDef<Invitation>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
-        className="translate-y-[2px]"
+        className="translate-y-0.5"
       />
     ),
     enableSorting: false,

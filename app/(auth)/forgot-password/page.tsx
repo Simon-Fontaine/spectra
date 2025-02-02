@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { Metadata } from "next";
+import { ForgotPasswordForm } from "@/components/forms/forgotpassword-form";
 import { APP_LOGO } from "@/config/config-ui";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
-import { ForgotPasswordForm } from "@/components/forms/forgotpassword-form";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Forgot Password",

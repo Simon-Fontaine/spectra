@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { consumeInvitation, registerUser } from "@/lib/auth/user";
+import { createVerificationToken } from "@/lib/auth/verification";
 import { resend } from "@/lib/email/resend";
 import { apiSignUpSchema } from "@/lib/zod";
 import { VerificationType } from "@prisma/client";
-import { APP_CONFIG_PUBLIC } from "@/config/config.public";
-import { APP_CONFIG_PRIVATE } from "@/config/config.private";
-import { consumeInvitation, registerUser } from "@/lib/auth/user";
-import { createVerificationToken } from "@/lib/auth/verification";
+import { NextResponse } from "next/server";
 
 /**
  * Registers a new user & sends email verification.
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     if (!APP_CONFIG_PRIVATE.REGISTRATION_ENABLED) {
       return NextResponse.json(
         { success: false, error: "Registration are currently disabled." },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         { success: false, error: parsed.error.message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       if (!(await consumeInvitation(email)))
         return NextResponse.json(
           { success: false, error: "Registration is invite-only." },
-          { status: 403 }
+          { status: 403 },
         );
     }
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const token = await createVerificationToken(
       newUser.id,
       VerificationType.EMAIL_VERIFICATION,
-      24
+      24,
     );
     const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/email/verify?token=${token}`;
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : "Registration failed.";
     return NextResponse.json(
       { success: false, error: message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

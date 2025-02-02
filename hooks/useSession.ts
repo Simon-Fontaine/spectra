@@ -1,8 +1,8 @@
 "use client";
 
-import useSWR from "swr";
-import { betterFetch } from "@better-fetch/fetch";
 import type { SessionWithUser } from "@/types/models";
+import { betterFetch } from "@better-fetch/fetch";
+import useSWR from "swr";
 
 async function fetchSession(): Promise<SessionWithUser | null> {
   const { data, error } = await betterFetch<{

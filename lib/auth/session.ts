@@ -1,6 +1,6 @@
-import prisma from "@/lib/prisma";
-import { sha256Hash, randomHex } from "@/lib/utils/hash";
 import { APP_CONFIG_PRIVATE } from "@/config/config.private";
+import prisma from "@/lib/prisma";
+import { randomHex, sha256Hash } from "@/lib/utils/hash";
 
 interface CreateSessionOptions {
   sessionExpiresInMinutes?: number;
@@ -26,7 +26,7 @@ export async function createSession(
   location: string,
   {
     sessionExpiresInMinutes = APP_CONFIG_PRIVATE.SESSION_EXPIRATION_MINUTES,
-  }: CreateSessionOptions = {}
+  }: CreateSessionOptions = {},
 ): Promise<{
   rawSessionToken: string;
   csrfSecret: string;
@@ -81,7 +81,7 @@ export async function getSessionFromToken(rawToken: string) {
 
   // Sliding expiration: update expiresAt to now + X minutes
   const newExpires = new Date(
-    Date.now() + APP_CONFIG_PRIVATE.SESSION_EXPIRATION_MINUTES * 60_000
+    Date.now() + APP_CONFIG_PRIVATE.SESSION_EXPIRATION_MINUTES * 60_000,
   );
 
   await prisma.session.update({
@@ -128,7 +128,7 @@ export async function deleteSession(rawToken: string) {
  */
 export async function validateCSRF(
   rawSessionToken: string,
-  clientCSRF: string | null
+  clientCSRF: string | null,
 ) {
   if (!rawSessionToken || !clientCSRF) return false;
 

@@ -1,15 +1,15 @@
-import { Metadata } from "next";
+import { AppSidebar } from "@/components/layouts/dashboard/app-sidebar";
+import { Breadcrumbs } from "@/components/layouts/dashboard/breadcrumbs";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { getSession } from "@/lib/auth/get-session";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/get-session";
-import { Separator } from "@/components/ui/separator";
-import { AppSidebar } from "@/components/layouts/dashboard/app-sidebar";
-import { Breadcrumbs } from "@/components/layouts/dashboard/breadcrumbs";
 
 export const metadata: Metadata = {
   title: {

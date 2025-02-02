@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { Metadata } from "next";
+import { SignUpForm } from "@/components/forms/signup-form";
 import { APP_LOGO } from "@/config/config-ui";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
-import { SignUpForm } from "@/components/forms/signup-form";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Register",

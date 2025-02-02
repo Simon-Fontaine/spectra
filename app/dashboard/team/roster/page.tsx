@@ -1,10 +1,10 @@
-import { Metadata } from "next";
 import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
-import prisma from "@/lib/prisma";
 import { TeamRoster } from "@/components/team-roster";
+import prisma from "@/lib/prisma";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Team Roster",

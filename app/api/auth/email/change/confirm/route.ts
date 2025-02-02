@@ -1,7 +1,7 @@
-import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { VerificationType } from "@prisma/client";
 import { consumeVerificationToken } from "@/lib/auth/verification";
+import prisma from "@/lib/prisma";
+import { VerificationType } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 /**
  * Confirms the user's new email.
@@ -14,18 +14,18 @@ export async function GET(request: Request) {
     if (!token) {
       return NextResponse.json(
         { success: false, error: "No token." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const verification = await consumeVerificationToken(
       token,
-      VerificationType.EMAIL_CHANGE
+      VerificationType.EMAIL_CHANGE,
     );
     if (!verification || !verification.newEmail) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired token." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,13 +35,13 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.redirect(
-      new URL("/dashboard/settings/profile?emailUpdated=true", url)
+      new URL("/dashboard/settings/profile?emailUpdated=true", url),
     );
   } catch (err) {
     console.error("EMAIL-CHANGE-CONFIRM:", err);
     return NextResponse.json(
       { success: false, error: "Confirmation failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

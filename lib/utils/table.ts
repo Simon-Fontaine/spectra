@@ -1,3 +1,5 @@
+import type { Role, Specialty } from "@prisma/client";
+import type { Column } from "@tanstack/react-table";
 import {
   AxeIcon,
   CircleIcon,
@@ -11,8 +13,6 @@ import {
   SwordsIcon,
   SyringeIcon,
 } from "lucide-react";
-import { Role, Specialty } from "@prisma/client";
-import { Column } from "@tanstack/react-table";
 
 export function sanitizeString(string: string) {
   return string
@@ -63,8 +63,8 @@ export function getCommonPinningStyles<TData>({
       ? isLastLeftPinnedColumn
         ? "-4px 0 4px -4px hsl(var(--border)) inset"
         : isFirstRightPinnedColumn
-        ? "4px 0 4px -4px hsl(var(--border)) inset"
-        : undefined
+          ? "4px 0 4px -4px hsl(var(--border)) inset"
+          : undefined
       : undefined,
     left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
     right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,

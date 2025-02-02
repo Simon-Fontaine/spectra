@@ -1,6 +1,6 @@
-import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import bcrypt from "bcryptjs";
 /**
  * Registers a new user in the database with a hashed password.
  * Throws an error if username or email are already taken.

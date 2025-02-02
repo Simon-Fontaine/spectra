@@ -1,7 +1,7 @@
-import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { VerificationType } from "@prisma/client";
 import { consumeVerificationToken } from "@/lib/auth/verification";
+import prisma from "@/lib/prisma";
+import { VerificationType } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 /**
  * Confirms account deletion.
@@ -14,18 +14,18 @@ export async function GET(request: Request) {
     if (!token) {
       return NextResponse.json(
         { success: false, error: "No token." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const verification = await consumeVerificationToken(
       token,
-      VerificationType.ACCOUNT_DELETION
+      VerificationType.ACCOUNT_DELETION,
     );
     if (!verification) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired token." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     console.error("ACCOUNT-DELETION-CONFIRM:", err);
     return NextResponse.json(
       { success: false, error: "Deletion failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

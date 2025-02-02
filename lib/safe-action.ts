@@ -1,11 +1,11 @@
-import { z } from "zod";
+import { Role } from "@prisma/client";
 import {
+  DEFAULT_SERVER_ERROR_MESSAGE,
   createMiddleware,
   createSafeActionClient,
-  DEFAULT_SERVER_ERROR_MESSAGE,
 } from "next-safe-action";
+import { z } from "zod";
 import { getSession } from "./auth/get-session";
-import { Role } from "@prisma/client";
 
 export class ActionError extends Error {}
 
@@ -41,7 +41,7 @@ export const adminMiddleware = createMiddleware().define(async ({ next }) => {
   if (!session) throw new ActionError("Please sign in to continue.");
   if (!session.user.roles.includes(Role.ADMIN))
     throw new ActionError(
-      "You do not have the required permissions to perform this action."
+      "You do not have the required permissions to perform this action.",
     );
 
   return next({ ctx: { session } });
@@ -60,9 +60,9 @@ export const adminOrSelfMiddleware = createMiddleware().define(
       return next({ ctx: { session } });
 
     throw new ActionError(
-      "You do not have the required permissions to perform this action."
+      "You do not have the required permissions to perform this action.",
     );
-  }
+  },
 );
 
 export const adminActionClient = actionClient.use(adminMiddleware);

@@ -1,3 +1,34 @@
+import { DataTable } from "@/components/data-table/data-table";
+import { PageHeaderHeading } from "@/components/page-header";
+import prisma from "@/lib/prisma";
+import { Role } from "@prisma/client";
+import { columns, filterFields } from "./_components/columns";
+
 export default async function DashboardAdminTeamManagementPage() {
-  return <h1>Team Management</h1>;
+  const users = await prisma.user.findMany({
+    where: {
+      roles: {
+        has: Role.PLAYER || Role.COACH,
+      },
+    },
+    omit: {
+      password: true,
+    },
+  });
+
+  return (
+    <div className="flex flex-1 flex-col gap-10 p-4">
+      <PageHeaderHeading>Team Management</PageHeaderHeading>
+
+      <DataTable
+        data={users}
+        columns={columns}
+        filterFields={filterFields}
+        initialState={{
+          columnPinning: { right: ["actions"] },
+          sorting: [{ id: "username", desc: true }],
+        }}
+      />
+    </div>
+  );
 }

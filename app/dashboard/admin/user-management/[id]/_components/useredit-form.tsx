@@ -1,22 +1,7 @@
 "use client";
 
-import {
-  getEmailSchema,
-  getDisplayNameSchema,
-  getUsernameSchema,
-} from "@/lib/zod";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { toast } from "sonner";
-import { useRef } from "react";
+import { DataTable } from "@/components/data-table/data-table";
+import LoadingButton from "@/components/loading-button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,21 +13,36 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { UserWithSessions } from "@/types/models";
-import { useAction } from "next-safe-action/hooks";
-import { zodResolver } from "@hookform/resolvers/zod";
-import LoadingButton from "@/components/loading-button";
-import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import {
+  getDisplayNameSchema,
+  getEmailSchema,
+  getUsernameSchema,
+} from "@/lib/zod";
+import type { UserWithSessions } from "@/types/models";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAction } from "next-safe-action/hooks";
+import { useRef } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { handleDeleteUser } from "../../_lib/actions";
 import {
   handleUserEmailUpdate,
   handleUserNameUpdate,
   handleUserUsernameUpdate,
 } from "../_lib/actions";
-import { handleDeleteUser } from "../../_lib/actions";
-import { DataTable } from "@/components/data-table/data-table";
 import { columns, filterFields } from "./columns";
 
 const updateDisplayNameSchema = z.object({
@@ -99,7 +99,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
     });
 
   const onUpdateName = async (
-    values: z.infer<typeof updateDisplayNameSchema>
+    values: z.infer<typeof updateDisplayNameSchema>,
   ) => {
     executeUpdateName({
       userId: user.id,
@@ -113,7 +113,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
   const updateUsernameForm = useForm<z.infer<typeof updateUsernameSchema>>({
     resolver: zodResolver(updateUsernameSchema),
     defaultValues: {
-      username: user.username!,
+      username: user.username,
     },
   });
 
@@ -146,7 +146,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
     });
 
   const onUpdateUsername = async (
-    values: z.infer<typeof updateUsernameSchema>
+    values: z.infer<typeof updateUsernameSchema>,
   ) => {
     executeUpdateUsername({
       userId: user.id,
@@ -301,14 +301,14 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
                           <span className="text-sm font-medium">
                             {APP_CONFIG_PUBLIC.APP_URL.replace(
                               /https?:\/\//g,
-                              ""
+                              "",
                             )}
                             /players/
                           </span>
                         </div>
                         <Input
                           className="rounded-none rounded-r-md"
-                          placeholder={user.username!}
+                          placeholder={user.username}
                           {...field}
                         />
                       </div>

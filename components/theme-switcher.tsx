@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
 import { useTheme } from "next-themes";
+import { useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { MoonIcon, SunIcon } from "lucide-react";

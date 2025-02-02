@@ -9,7 +9,7 @@ import { DataTableViewOptions } from "@/components/data-table/data-table-view-op
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { DataTableFilterField } from "@/types/data-table";
+import type { DataTableFilterField } from "@/types/data-table";
 
 interface DataTableToolbarProps<TData>
   extends React.HTMLAttributes<HTMLDivElement> {
@@ -37,7 +37,7 @@ export function DataTableToolbar<TData>({
     <div
       className={cn(
         "flex w-full items-center justify-between gap-2 overflow-auto p-1",
-        className
+        className,
       )}
       {...props}
     >
@@ -61,7 +61,7 @@ export function DataTableToolbar<TData>({
                   }
                   className="h-8 w-40 lg:w-64"
                 />
-              )
+              ),
           )}
         {filterableColumns.length > 0 &&
           filterableColumns.map(
@@ -73,7 +73,7 @@ export function DataTableToolbar<TData>({
                   title={column.label}
                   options={column.options ?? []}
                 />
-              )
+              ),
           )}
         {isFiltered && (
           <Button

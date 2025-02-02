@@ -9,7 +9,7 @@ function PageHeader({
     <section
       className={cn(
         "flex flex-col items-start gap-2 border-b border-border/40 py-8 dark:border-border md:py-10 lg:py-12",
-        className
+        className,
       )}
       {...props}
     >
@@ -26,7 +26,7 @@ function PageHeaderHeading({
     <h1
       className={cn(
         "text-3xl font-bold leading-tight tracking-tighter md:text-4xl lg:leading-[1.1]",
-        className
+        className,
       )}
       {...props}
     />
@@ -41,7 +41,7 @@ function PageHeaderDescription({
     <p
       className={cn(
         "max-w-2xl text-balance text-lg font-light text-foreground",
-        className
+        className,
       )}
       {...props}
     />
@@ -56,7 +56,7 @@ function PageActions({
     <div
       className={cn(
         "flex w-full items-center justify-start gap-2 py-2",
-        className
+        className,
       )}
       {...props}
     />

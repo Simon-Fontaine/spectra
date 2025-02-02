@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -6,6 +5,7 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO } from "@/config/config-ui";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import Link from "next/link";
 
 export function NavHeader() {
   return (

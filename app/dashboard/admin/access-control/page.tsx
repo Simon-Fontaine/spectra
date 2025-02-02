@@ -1,7 +1,7 @@
-import prisma from "@/lib/prisma";
-import { PageHeaderHeading } from "@/components/page-header";
-import { columns, filterFields } from "./_components/columns";
 import { DataTable } from "@/components/data-table/data-table";
+import { PageHeaderHeading } from "@/components/page-header";
+import prisma from "@/lib/prisma";
+import { columns, filterFields } from "./_components/columns";
 import { InviteUserDialog } from "./_components/invite-user-dialog";
 
 export default async function DashboardAdminAccessControlPage() {

@@ -1,13 +1,13 @@
 import "./globals.css";
-import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
-import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "@/components/ui/sonner";
-import { Analytics } from "@vercel/analytics/react";
-import { Geist, Geist_Mono } from "next/font/google";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +51,7 @@ export default function RootLayout({
         className={cn(
           "min-h-svh bg-background font-sans antialiased",
           geistSans.variable,
-          geistMono.variable
+          geistMono.variable,
         )}
       >
         <ThemeProvider

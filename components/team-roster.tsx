@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -5,12 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { Role, type Specialty } from "@prisma/client";
 import { User2Icon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Role, Specialty } from "@prisma/client";
+import { useMemo } from "react";
 
 interface RosterMember {
   specialty: Specialty;
@@ -64,24 +64,27 @@ function getSpecialtyColor(specialty: Specialty) {
 export function TeamRoster({ members }: RosterProps) {
   const players = members.filter(
     (member) =>
-      member.roles.includes(Role.PLAYER) || member.roles.includes(Role.COACH)
+      member.roles.includes(Role.PLAYER) || member.roles.includes(Role.COACH),
   );
 
   // Group players by specialty
   const groupedPlayers = useMemo(() => {
-    const grouped = players.reduce((acc, player) => {
-      if (!acc[player.specialty]) {
-        acc[player.specialty] = [];
-      }
-      acc[player.specialty].push(player);
-      return acc;
-    }, {} as Record<Specialty, RosterMember[]>);
+    const grouped = players.reduce(
+      (acc, player) => {
+        if (!acc[player.specialty]) {
+          acc[player.specialty] = [];
+        }
+        acc[player.specialty].push(player);
+        return acc;
+      },
+      {} as Record<Specialty, RosterMember[]>,
+    );
 
     // Sort specialties by predefined order
     return Object.entries(grouped).sort(
       ([specialtyA], [specialtyB]) =>
         specialtyOrder[specialtyA as keyof typeof specialtyOrder] -
-        specialtyOrder[specialtyB as keyof typeof specialtyOrder]
+        specialtyOrder[specialtyB as keyof typeof specialtyOrder],
     );
   }, [players]);
 
@@ -111,7 +114,7 @@ export function TeamRoster({ members }: RosterProps) {
                 variant="outline"
                 className={cn(
                   "font-medium",
-                  getSpecialtyColor(specialty as RosterMember["specialty"])
+                  getSpecialtyColor(specialty as RosterMember["specialty"]),
                 )}
               >
                 {specialtyLabels[specialty as keyof typeof specialtyLabels]}
@@ -124,8 +127,8 @@ export function TeamRoster({ members }: RosterProps) {
               {specialty.includes("TANK")
                 ? "Tank Line"
                 : specialty.includes("DPS")
-                ? "DPS Line"
-                : "Support Line"}
+                  ? "DPS Line"
+                  : "Support Line"}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1">

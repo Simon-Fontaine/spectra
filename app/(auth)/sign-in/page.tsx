@@ -1,10 +1,10 @@
-import Link from "next/link";
-import { Metadata } from "next";
-import { CheckCircle2Icon } from "lucide-react";
-import { APP_LOGO } from "@/config/config-ui";
-import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { SignInForm } from "@/components/forms/signin-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { APP_LOGO } from "@/config/config-ui";
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { CheckCircle2Icon } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Login",

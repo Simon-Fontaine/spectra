@@ -1,12 +1,12 @@
 "use server";
 
-import { z } from "zod";
-import { resend } from "@/lib/email/resend";
-import { revalidatePath } from "next/cache";
-import { getEmailSchema, inviteUserSchema } from "@/lib/zod";
-import { ActionError, adminActionClient } from "@/lib/safe-action";
-import prisma from "@/lib/prisma";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { resend } from "@/lib/email/resend";
+import prisma from "@/lib/prisma";
+import { ActionError, adminActionClient } from "@/lib/safe-action";
+import { getEmailSchema, inviteUserSchema } from "@/lib/zod";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 export const handleInviteUser = adminActionClient
   .metadata({ actionName: "handleInviteUser" })
@@ -19,7 +19,7 @@ export const handleInviteUser = adminActionClient
 
       if (existingUser) {
         throw new ActionError(
-          "A user with this email address is already registered. Please use a different email address."
+          "A user with this email address is already registered. Please use a different email address.",
         );
       }
 
@@ -29,7 +29,7 @@ export const handleInviteUser = adminActionClient
 
       if (existingInvite) {
         throw new ActionError(
-          "An invitation was already sent to this email. Please check your inbox or try again later."
+          "An invitation was already sent to this email. Please check your inbox or try again later.",
         );
       }
 
@@ -60,7 +60,7 @@ export const handleInviteUser = adminActionClient
       async onError({ error }) {
         console.error("Error inviting user:", error);
       },
-    }
+    },
   );
 
 const revokeInvitationSchema = z.object({
@@ -94,5 +94,5 @@ export const handleRevokeInvitation = adminActionClient
       async onError({ error }) {
         console.error("Error revoking invitation:", error);
       },
-    }
+    },
   );

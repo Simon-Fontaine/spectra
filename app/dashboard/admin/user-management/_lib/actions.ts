@@ -1,10 +1,10 @@
 "use server";
 
-import prisma from "@/lib/prisma";
-import { resend } from "@/lib/email/resend";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { resend } from "@/lib/email/resend";
+import prisma from "@/lib/prisma";
 import { ActionError, adminActionClient } from "@/lib/safe-action";
-import { getRoleSchema, getSpecialtySchema } from "@/lib/zod";
+import { getRoleSchema } from "@/lib/zod";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -42,7 +42,7 @@ export const handleUpdateUserRole = adminActionClient
 
       return {
         success: true,
-        message: `User role updated successfully.`,
+        message: "User role updated successfully.",
       };
     },
     {
@@ -52,45 +52,7 @@ export const handleUpdateUserRole = adminActionClient
       async onError({ error }) {
         console.error("Error updating user role:", error);
       },
-    }
-  );
-
-const updateUserSpecialtySchema = z.object({
-  userId: z.string(),
-  specialty: getSpecialtySchema(),
-});
-
-export const handleUpdateUserSpecialty = adminActionClient
-  .metadata({ actionName: "handleUpdateUserSpecialty" })
-  .schema(updateUserSpecialtySchema)
-  .action(
-    async ({ parsedInput: { userId, specialty } }) => {
-      const existingUser = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (!existingUser) {
-        throw new ActionError("No user found with the provided ID.");
-      }
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: { specialty },
-      });
-
-      return {
-        success: true,
-        message: `User specialty updated successfully.`,
-      };
     },
-    {
-      async onSuccess() {
-        revalidatePath("/dashboard/admin/user-management");
-      },
-      async onError({ error }) {
-        console.error("Error updating user specialty:", error);
-      },
-    }
   );
 
 const deleteUserSchema = z.object({
@@ -104,7 +66,7 @@ export const handleDeleteUser = adminActionClient
     async ({ parsedInput: { userId }, ctx }) => {
       if (ctx.session.user.id === userId) {
         throw new ActionError(
-          "You cannot delete your own account. Please contact another administrator if needed."
+          "You cannot delete your own account. Please contact another administrator if needed.",
         );
       }
 
@@ -135,5 +97,5 @@ export const handleDeleteUser = adminActionClient
       async onError({ error }) {
         console.error("Error deleting user:", error);
       },
-    }
+    },
   );

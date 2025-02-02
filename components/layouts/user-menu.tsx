@@ -1,5 +1,7 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { SessionWithUser } from "@/types/models";
 import {
   BellIcon,
   ChevronsUpDownIcon,
@@ -9,6 +11,11 @@ import {
   Settings2Icon,
   User2Icon,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,13 +25,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import Link from "next/link";
-import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { SessionWithUser } from "@/types/models";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 
 interface NavUserProps {
@@ -188,20 +188,20 @@ export function UserMenu({
         </SidebarMenuItem>
       </SidebarMenu>
     );
-  } else {
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="lg"
-            className="group relative gap-2 px-2 py-2 hover:bg-accent/80"
-          >
-            {menuTriggerContent}
-          </Button>
-        </DropdownMenuTrigger>
-        {menuContent}
-      </DropdownMenu>
-    );
   }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="lg"
+          className="group relative gap-2 px-2 py-2 hover:bg-accent/80"
+        >
+          {menuTriggerContent}
+        </Button>
+      </DropdownMenuTrigger>
+      {menuContent}
+    </DropdownMenu>
+  );
 }

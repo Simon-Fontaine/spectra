@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   Table,
   TableBody,
@@ -9,13 +8,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { exportTableToCSV } from "@/lib/export-csv";
+import { getCommonPinningStyles } from "@/lib/utils/table";
+import type { DataTableFilterField } from "@/types/data-table";
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  Table as TableType,
-  TableState,
-  VisibilityState,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  type TableState,
+  type Table as TableType,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -25,15 +27,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { toast } from "sonner";
-import { Progress } from "../ui/progress";
 import { DownloadIcon } from "lucide-react";
+import * as React from "react";
+import { toast } from "sonner";
 import LoadingButton from "../loading-button";
-import { exportTableToCSV } from "@/lib/export-csv";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTableFilterField } from "@/types/data-table";
-import { getCommonPinningStyles } from "@/lib/utils/table";
+import { Progress } from "../ui/progress";
 import { DataTablePagination } from "./data-table-pagination";
+import { DataTableToolbar } from "./data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -54,15 +54,15 @@ export function DataTable<TData, TValue>({
   children,
 }: DataTableProps<TData, TValue> & { children?: React.ReactNode }) {
   const [rowSelection, setRowSelection] = React.useState(
-    initialState?.rowSelection ?? {}
+    initialState?.rowSelection ?? {},
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>(initialState?.columnVisibility ?? {});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    initialState?.columnFilters ?? []
+    initialState?.columnFilters ?? [],
   );
   const [sorting, setSorting] = React.useState<SortingState>(
-    initialState?.sorting ?? []
+    initialState?.sorting ?? [],
   );
 
   const [progress, setProgress] = React.useState(0);
@@ -155,7 +155,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -179,7 +179,7 @@ export function DataTable<TData, TValue>({
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

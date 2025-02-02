@@ -1,14 +1,14 @@
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 
 const prismaClientSingleton = () => {
   return new PrismaClient().$extends(withAccelerate());
 };
 
-declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
-} & typeof global;
+declare global {
+  var prismaGlobal: ReturnType<typeof prismaClientSingleton>;
+}
 
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 

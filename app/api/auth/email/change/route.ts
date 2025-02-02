@@ -1,10 +1,10 @@
-import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { resend } from "@/lib/email/resend";
-import { VerificationType } from "@prisma/client";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { getSessionFromRawCookie } from "@/lib/auth/session";
 import { createVerificationToken } from "@/lib/auth/verification";
+import { resend } from "@/lib/email/resend";
+import prisma from "@/lib/prisma";
+import { VerificationType } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 /**
  * Requests an email change by sending a confirmation link to the new email.
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     if (!session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     if (!newEmail) {
       return NextResponse.json(
         { success: false, error: "Missing newEmail." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -36,14 +36,14 @@ export async function POST(request: Request) {
     if (foundEmail) {
       return NextResponse.json(
         { success: false, error: "Email in use." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const token = await createVerificationToken(
       session.userId,
       VerificationType.EMAIL_CHANGE,
-      24
+      24,
     );
 
     // Store the newEmail temporarily on the Verification record
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     console.error("EMAIL-CHANGE:", err);
     return NextResponse.json(
       { success: false, error: "Request failed." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

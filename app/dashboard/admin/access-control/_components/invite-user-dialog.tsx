@@ -1,16 +1,8 @@
 "use client";
 
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useRef } from "react";
-import { toast } from "sonner";
+import LoadingButton from "@/components/loading-button";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -21,22 +13,30 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { useForm } from "react-hook-form";
 import { inviteUserSchema } from "@/lib/zod";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useAction } from "next-safe-action/hooks";
-import { handleInviteUser } from "../_lib/actions";
-import { Calendar } from "@/components/ui/calendar";
 import { zodResolver } from "@hookform/resolvers/zod";
-import LoadingButton from "@/components/loading-button";
+import { format } from "date-fns";
 import { CalendarIcon, PlusIcon, SendIcon } from "lucide-react";
+import { useAction } from "next-safe-action/hooks";
+import { useRef } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { handleInviteUser } from "../_lib/actions";
 
 export function InviteUserDialog() {
   const toastRef = useRef<string | number | undefined>(undefined);
@@ -94,8 +94,8 @@ export function InviteUserDialog() {
         <DialogHeader>
           <DialogTitle>Invite User</DialogTitle>
           <DialogDescription>
-            Fill out the fields below to send an invitation. When you&apos;re
-            ready, click Invite to proceed.
+            Fill out the fields below to send an invitation. When you're ready,
+            click Invite to proceed.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -137,7 +137,7 @@ export function InviteUserDialog() {
                               variant={"outline"}
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}
                             >
                               {field.value ? (

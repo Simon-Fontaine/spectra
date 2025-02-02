@@ -1,6 +1,6 @@
-import { VerificationType } from "@prisma/client";
-import { randomHex } from "@/lib/utils/hash";
 import prisma from "@/lib/prisma";
+import { randomHex } from "@/lib/utils/hash";
+import type { VerificationType } from "@prisma/client";
 
 /**
  * Creates a verification token for a user with a specified type (e.g., email verification).
@@ -14,7 +14,7 @@ import prisma from "@/lib/prisma";
 export async function createVerificationToken(
   userId: string,
   type: VerificationType,
-  expiresInHours = 24
+  expiresInHours = 24,
 ) {
   const token = randomHex(32);
   const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
@@ -40,7 +40,7 @@ export async function createVerificationToken(
  */
 export async function consumeVerificationToken(
   token: string,
-  type: VerificationType
+  type: VerificationType,
 ) {
   const verification = await prisma.verification.findFirst({
     where: {

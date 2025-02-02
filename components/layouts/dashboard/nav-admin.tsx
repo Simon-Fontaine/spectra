@@ -7,7 +7,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export function NavAdmin({
   items,

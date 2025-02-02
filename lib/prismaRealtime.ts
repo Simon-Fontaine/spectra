@@ -1,18 +1,18 @@
+import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 import { PrismaClient } from "@prisma/client/edge";
 import { withPulse } from "@prisma/extension-pulse/node";
-import { APP_CONFIG_PRIVATE } from "@/config/config.private";
 
 const prismaRealtimeClientSingleton = () => {
   return new PrismaClient().$extends(
     withPulse({
       apiKey: APP_CONFIG_PRIVATE.PULSE_API_KEY,
-    })
+    }),
   );
 };
 
-declare const globalThis: {
-  prismaRealtimeGlobal: ReturnType<typeof prismaRealtimeClientSingleton>;
-} & typeof global;
+declare global {
+  var prismaRealtimeGlobal: ReturnType<typeof prismaRealtimeClientSingleton>;
+}
 
 const prismaRealtime =
   globalThis.prismaRealtimeGlobal ?? prismaRealtimeClientSingleton();

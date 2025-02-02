@@ -1,25 +1,6 @@
 "use client";
 
-import {
-  EllipsisIcon,
-  PencilIcon,
-  ShieldHalfIcon,
-  TrashIcon,
-  UserIcon,
-} from "lucide-react";
-import {
-  handleDeleteUser,
-  handleUpdateUserRole,
-  handleUpdateUserSpecialty,
-} from "../_lib/actions";
-import {
-  getRoleIcon,
-  getSpecialtyIcon,
-  sanitizeString,
-} from "@/lib/utils/table";
-import Link from "next/link";
-import { useRef } from "react";
-import { toast } from "sonner";
+import LoadingButton from "@/components/loading-button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,25 +12,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Row } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { getRoleIcon, sanitizeString } from "@/lib/utils/table";
+import type { CleanUser } from "@/types/models";
+import { Role } from "@prisma/client";
+import type { Row } from "@tanstack/react-table";
+import { EllipsisIcon, PencilIcon, TrashIcon, UserIcon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
-import { Role, Specialty } from "@prisma/client";
-import LoadingButton from "@/components/loading-button";
-import { CleanUser } from "@/types/models";
+import Link from "next/link";
+import { useRef } from "react";
+import { toast } from "sonner";
+import { handleDeleteUser, handleUpdateUserRole } from "../_lib/actions";
 
 export function UserRowActions({ row }: { row: Row<CleanUser> }) {
   const toastRef = useRef<string | number | undefined>(undefined);
@@ -81,36 +65,6 @@ export function UserRowActions({ row }: { row: Row<CleanUser> }) {
         toastRef.current = undefined;
       },
     });
-
-  const {
-    execute: executeUpdateSpecialty,
-    isPending: isUpdateSpecialtyPending,
-  } = useAction(handleUpdateUserSpecialty, {
-    onExecute: () => {
-      toastRef.current = toast.loading("Updating user specialty...");
-    },
-    onSuccess: ({ data }) => {
-      toast.success(data?.message, {
-        id: toastRef.current,
-      });
-      toastRef.current = undefined;
-    },
-    onError: ({ error }) => {
-      const { serverError, validationErrors } = error;
-
-      let errorMessage =
-        serverError || "Something went wrong. Please try again later.";
-
-      if (validationErrors?.formErrors) {
-        errorMessage = Object.values(validationErrors.formErrors).join(", ");
-      }
-
-      toast.error(errorMessage, {
-        id: toastRef.current,
-      });
-      toastRef.current = undefined;
-    },
-  });
 
   const { execute: executeDeleteUser, isPending: isDeleteUserPending } =
     useAction(handleDeleteUser, {
@@ -189,43 +143,6 @@ export function UserRowActions({ row }: { row: Row<CleanUser> }) {
                   </DropdownMenuCheckboxItem>
                 );
               })}
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer">
-              <ShieldHalfIcon /> Specialty
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuRadioGroup
-                value={row.original.specialty}
-                onValueChange={(value) => {
-                  if (value === row.original.specialty) return;
-
-                  executeUpdateSpecialty({
-                    userId: row.original.id,
-                    specialty: value as Specialty,
-                  });
-                }}
-              >
-                {Object.values(Specialty).map((label) => {
-                  const Icon = getSpecialtyIcon(label);
-
-                  return (
-                    <DropdownMenuRadioItem
-                      key={label}
-                      value={label}
-                      className="capitalize cursor-pointer"
-                      disabled={isUpdateSpecialtyPending}
-                    >
-                      <Icon
-                        className="mr-2 size-4 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                      {sanitizeString(label)}
-                    </DropdownMenuRadioItem>
-                  );
-                })}
-              </DropdownMenuRadioGroup>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSeparator />

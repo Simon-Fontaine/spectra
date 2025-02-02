@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromRawCookie } from "@/lib/auth/session";
 import { Role } from "@prisma/client";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Middleware to check if a user is authenticated.

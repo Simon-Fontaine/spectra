@@ -1,10 +1,10 @@
-import { Metadata } from "next";
+import { Announcement } from "@/components/announcement";
 import {
   PageHeader,
   PageHeaderDescription,
   PageHeaderHeading,
 } from "@/components/page-header";
-import { Announcement } from "@/components/announcement";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "News",

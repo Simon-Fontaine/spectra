@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { cookies } from "next/headers";
 import { getSessionFromToken } from "@/lib/auth/session";
-import { SessionWithUser } from "@/types/models";
+import type { SessionWithUser } from "@/types/models";
+import { cookies } from "next/headers";
 
 /**
  * Retrieves a session from the 'session_token' cookie if present.

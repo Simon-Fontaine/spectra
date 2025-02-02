@@ -1,5 +1,4 @@
-import Link from "next/link";
-import prisma from "@/lib/prisma";
+import { PageHeaderHeading } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,7 +6,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PageHeaderHeading } from "@/components/page-header";
+import prisma from "@/lib/prisma";
+import Link from "next/link";
 import { UserEditForms } from "./_components/useredit-form";
 
 interface DashboardUserEditPageProps {
@@ -15,7 +15,7 @@ interface DashboardUserEditPageProps {
 }
 
 export default async function DashboardUserEditPage(
-  props: DashboardUserEditPageProps
+  props: DashboardUserEditPageProps,
 ) {
   const { id } = await props.params;
 
@@ -36,7 +36,7 @@ export default async function DashboardUserEditPage(
           <Card className="bg-destructive ">
             <CardHeader>
               <CardTitle className="text-destructive-foreground">
-                Oops! We couldn&apos;t find the user you&apos;re looking for.
+                Oops! We couldn't find the user you're looking for.
               </CardTitle>
               <CardDescription className="text-destructive-foreground">
                 Please try refreshing the page or contact support if the issue
@@ -57,9 +57,7 @@ export default async function DashboardUserEditPage(
 
   return (
     <div className="flex flex-1 flex-col gap-10 p-4">
-      <PageHeaderHeading>
-        Manage {user.username}&apos;s Account
-      </PageHeaderHeading>
+      <PageHeaderHeading>Manage {user.username}'s Account</PageHeaderHeading>
 
       <UserEditForms user={user} />
     </div>

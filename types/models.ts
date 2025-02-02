@@ -1,4 +1,4 @@
-import { Session, User } from "@prisma/client";
+import type { Session, User } from "@prisma/client";
 
 export type CleanSession = Omit<Session, "token" | "csrfSecret">;
 export type CleanUser = Omit<User, "password">;

@@ -11,7 +11,7 @@ export async function sha256Hash(value: string): Promise<string> {
 
   // Convert ArrayBuffer to hex string using more concise iteration
   return Array.from(new Uint8Array(hashBuffer), (byte) =>
-    byte.toString(16).padStart(2, "0")
+    byte.toString(16).padStart(2, "0"),
   ).join("");
 }
 
@@ -26,6 +26,6 @@ export function randomHex(byteLength = 32): string {
 
   // Efficiently convert bytes to hex string
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
-    ""
+    "",
   );
 }

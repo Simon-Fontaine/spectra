@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import Link from "next/link";
 
 const footerLinks = [
   { href: "/privacy-policy", label: "Privacy Policy" },

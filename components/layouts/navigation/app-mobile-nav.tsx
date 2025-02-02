@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -10,9 +9,10 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
 import { APP_NAVIGATION } from "@/config/config-ui";
 import { ExternalLinkIcon, MenuIcon } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export function AppMobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,10 +42,10 @@ export function AppMobileNav() {
             >
               Home
             </Link>
-            {APP_NAVIGATION.map((item, index) =>
+            {APP_NAVIGATION.map((item) =>
               item.href && !item.disabled ? (
                 <Link
-                  key={index}
+                  key={item.title}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
                   className="text-base"
@@ -62,7 +62,7 @@ export function AppMobileNav() {
                     ) : null}
                   </div>
                 </Link>
-              ) : null
+              ) : null,
             )}
           </div>
         </div>

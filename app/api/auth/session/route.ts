@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextResponse } from "next/server";
 import { getSessionFromToken } from "@/lib/auth/session";
+import { NextResponse } from "next/server";
 
 /**
  * Returns the current session (if any).

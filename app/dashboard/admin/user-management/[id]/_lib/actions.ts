@@ -1,16 +1,16 @@
 "use server";
 
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { resend } from "@/lib/email/resend";
+import prisma from "@/lib/prisma";
+import { ActionError, adminActionClient } from "@/lib/safe-action";
 import {
-  getEmailSchema,
   getDisplayNameSchema,
+  getEmailSchema,
   getUsernameSchema,
 } from "@/lib/zod";
-import { z } from "zod";
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { resend } from "@/lib/email/resend";
-import { APP_CONFIG_PUBLIC } from "@/config/config.public";
-import { ActionError, adminActionClient } from "@/lib/safe-action";
+import { z } from "zod";
 
 const updateUserNameSchema = z.object({
   userId: z.string(),
@@ -44,7 +44,7 @@ export const handleUserNameUpdate = adminActionClient
 
       return {
         success: true,
-        message: `User name updated successfully.`,
+        message: "User name updated successfully.",
       };
     },
     {
@@ -54,7 +54,7 @@ export const handleUserNameUpdate = adminActionClient
       async onError({ error }) {
         console.error("Error updating user name:", error);
       },
-    }
+    },
   );
 
 const updateUserUsernameSchema = z.object({
@@ -97,7 +97,7 @@ export const handleUserUsernameUpdate = adminActionClient
 
       return {
         success: true,
-        message: `User username updated successfully.`,
+        message: "User username updated successfully.",
       };
     },
     {
@@ -107,7 +107,7 @@ export const handleUserUsernameUpdate = adminActionClient
       async onError({ error }) {
         console.error("Error updating user name:", error);
       },
-    }
+    },
   );
 
 const updateUserEmailSchema = z.object({
@@ -150,7 +150,7 @@ export const handleUserEmailUpdate = adminActionClient
 
       return {
         success: true,
-        message: `User email updated successfully.`,
+        message: "User email updated successfully.",
       };
     },
     {
@@ -160,7 +160,7 @@ export const handleUserEmailUpdate = adminActionClient
       async onError({ error }) {
         console.error("Error updating user email:", error);
       },
-    }
+    },
   );
 
 const revokeUserSessionSchema = z.object({
@@ -187,7 +187,7 @@ export const handleRevokeSession = adminActionClient
 
       return {
         success: true,
-        message: `User session revoked successfully.`,
+        message: "User session revoked successfully.",
       };
     },
     {
@@ -197,7 +197,7 @@ export const handleRevokeSession = adminActionClient
       async onError({ error }) {
         console.error("Error revoking user session:", error);
       },
-    }
+    },
   );
 
 const bulkRevokeUserSessionsSchema = z.object({
@@ -238,5 +238,5 @@ export const handleBulkRevokeSessions = adminActionClient
       async onError({ error }) {
         console.error("Error revoking user sessions:", error);
       },
-    }
+    },
   );

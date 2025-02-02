@@ -1,7 +1,7 @@
-import { toast } from "sonner";
-import { useRef } from "react";
-import { useAction } from "next-safe-action/hooks";
 import LoadingButton from "@/components/loading-button";
+import { useAction } from "next-safe-action/hooks";
+import { useRef } from "react";
+import { toast } from "sonner";
 import { handleRevokeInvitation } from "../_lib/actions";
 
 export const InvitationRowActions = ({ email }: { email: string }) => {
