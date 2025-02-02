@@ -1,8 +1,7 @@
 import { SignInForm } from "@/components/forms/signin-form";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {} from "@/components/ui/alert";
 import { APP_LOGO } from "@/config/config-ui";
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
-import { CheckCircle2Icon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -32,13 +31,9 @@ export default async function SignInPage(props: SignInPageProps) {
           {APP_CONFIG_PUBLIC.APP_NAME}
         </Link>
         {isVerified && (
-          <Alert className="rounded-xl border shadow">
-            <CheckCircle2Icon className="h-4 w-4" />
-            <AlertTitle>Email verified!</AlertTitle>
-            <AlertDescription>
-              Your email has been confirmed. You can now log in below.
-            </AlertDescription>
-          </Alert>
+          <div className="rounded-xl border bg-green-100 p-4 text-green-800 shadow">
+            Your email has been confirmed. You can now log in below.
+          </div>
         )}
         <SignInForm />
       </div>

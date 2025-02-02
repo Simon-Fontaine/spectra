@@ -39,12 +39,12 @@ export const actionClient = createSafeActionClient({
 export const adminMiddleware = createMiddleware().define(async ({ next }) => {
   const session = await getSession();
   if (!session) throw new ActionError("Please sign in to continue.");
-  if (!session.user.roles.includes(Role.ADMIN))
-    throw new ActionError(
-      "You do not have the required permissions to perform this action.",
-    );
+  if (session.user.roles.includes(Role.ADMIN))
+    return next({ ctx: { session } });
 
-  return next({ ctx: { session } });
+  throw new ActionError(
+    "You do not have the required permissions to perform this action.",
+  );
 });
 
 export const adminOrSelfMiddleware = createMiddleware().define(

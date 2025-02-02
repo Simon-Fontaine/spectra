@@ -71,7 +71,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
   >({
     resolver: zodResolver(updateDisplayNameSchema),
     defaultValues: {
-      displayName: user.displayName || undefined,
+      displayName: user.displayName || "",
     },
   });
 

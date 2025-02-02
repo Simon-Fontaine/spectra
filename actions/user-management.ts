@@ -10,6 +10,7 @@ import {
   getUsernameSchema,
 } from "@/lib/zod";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { z } from "zod";
 
 /**
@@ -151,20 +152,20 @@ export const handleUserEmailUpdate = adminOrSelfActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      const existingEmailUser = await prisma.user.findFirst({
-        where: { email },
-      });
-      if (existingEmailUser) {
-        throw new ActionError("User email already exists.");
-      }
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: { email },
-      });
-
       const isAdminAction = ctx.session.user.id !== userId;
       if (isAdminAction) {
+        const existingEmailUser = await prisma.user.findFirst({
+          where: { email },
+        });
+        if (existingEmailUser) {
+          throw new ActionError("User email already exists.");
+        }
+
+        await prisma.user.update({
+          where: { id: userId },
+          data: { email },
+        });
+
         await resend.emails.send({
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: existingUser.email,
@@ -176,9 +177,31 @@ export const handleUserEmailUpdate = adminOrSelfActionClient
           message: "User email updated successfully.",
         };
       }
+
+      const formData = new FormData();
+      formData.append("newEmail", email);
+
+      const cookieStore = await cookies();
+      const cookieHeader = cookieStore.toString();
+
+      const response = await fetch(
+        `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/email/change`,
+        {
+          method: "POST",
+          headers: {
+            cookie: cookieHeader,
+          },
+          body: formData,
+        },
+      );
+
+      if (!response.ok) {
+        throw new ActionError("Failed to send email verification.");
+      }
+
       return {
         success: true,
-        message: "Your email has been updated successfully.",
+        message: "If that email is valid, a link was sent.",
       };
     },
     {
