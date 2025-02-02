@@ -171,7 +171,7 @@ export function TeamMemberRowActions({ row }: { row: Row<CleanUser> }) {
                   <DropdownMenuRadioItem
                     key={label}
                     value={label}
-                    className="capitalize cursor-pointer"
+                    className="cursor-pointer capitalize"
                     disabled={isUpdateSpecialtyPending}
                   >
                     <Icon

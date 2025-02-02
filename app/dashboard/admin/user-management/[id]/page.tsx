@@ -32,7 +32,7 @@ export default async function DashboardUserEditPage(
   if (!user) {
     return (
       <main className="flex h-full items-center justify-center">
-        <div className="max-w-md text-center grid gap-4">
+        <div className="grid max-w-md gap-4 text-center">
           <Card className="bg-destructive ">
             <CardHeader>
               <CardTitle className="text-destructive-foreground">

@@ -41,7 +41,7 @@ export default function HomePage() {
       <div className="container py-6">
         <Card className="overflow-hidden">
           <CardHeader>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <VideoIcon className="h-4 w-4" />
               <p>Latest Video</p>
             </div>

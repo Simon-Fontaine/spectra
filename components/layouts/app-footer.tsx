@@ -11,7 +11,7 @@ export function AppFooter() {
   return (
     <footer className="border-t bg-background">
       <div className="container flex flex-col gap-4 py-6 md:h-24 md:flex-row md:items-center md:justify-between md:py-0">
-        <p className="text-balance text-center text-sm text-muted-foreground md:text-left">
+        <p className="text-balance text-center text-muted-foreground text-sm md:text-left">
           &copy; {new Date().getFullYear()} {APP_CONFIG_PUBLIC.APP_NAME}. All
           rights reserved.
         </p>
@@ -21,7 +21,7 @@ export function AppFooter() {
             <Link
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-foreground text-muted-foreground underline-offset-4 hover:underline"
+              className="text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
             >
               {link.label}
             </Link>

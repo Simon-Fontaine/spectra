@@ -180,7 +180,7 @@ export function ResetPasswordForm({
           </Form>
         </CardContent>
       </Card>
-      <p className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
+      <p className="text-balance text-center text-muted-foreground text-xs [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
         By clicking continue, you agree to our{" "}
         <Link href="#">Terms of Service</Link> and{" "}
         <Link href="#">Privacy Policy</Link>.

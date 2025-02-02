@@ -157,7 +157,7 @@ export function UserMenu({
       >
         {loading ? (
           <>
-            <Loader2Icon className="animate-spin mr-2" />
+            <Loader2Icon className="mr-2 animate-spin" />
             Signing out...
           </>
         ) : (

@@ -236,13 +236,13 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
       <Card className="bg-muted/50">
         <Form {...updateNameForm}>
           <form onSubmit={updateNameForm.handleSubmit(onUpdateName)}>
-            <CardContent className="p-6 flex flex-col gap-2">
+            <CardContent className="flex flex-col gap-2 p-6">
               <FormField
                 control={updateNameForm.control}
                 name="displayName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-2xl font-semibold">
+                    <FormLabel className="font-semibold text-2xl">
                       Display Name
                     </FormLabel>
                     <FormDescription>
@@ -260,8 +260,8 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex justify-between border-t py-3 min-h-12">
-              <p className="text-sm text-muted-foreground pr-4">
+            <CardFooter className="flex min-h-12 justify-between border-t py-3">
+              <p className="pr-4 text-muted-foreground text-sm">
                 Please use 48 characters maximum.
               </p>
               <LoadingButton
@@ -283,13 +283,13 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
       <Card className="bg-muted/50">
         <Form {...updateUsernameForm}>
           <form onSubmit={updateUsernameForm.handleSubmit(onUpdateUsername)}>
-            <CardContent className="p-6 flex flex-col gap-2">
+            <CardContent className="flex flex-col gap-2 p-6">
               <FormField
                 control={updateUsernameForm.control}
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-2xl font-semibold">
+                    <FormLabel className="font-semibold text-2xl">
                       Username
                     </FormLabel>
                     <FormDescription>
@@ -297,8 +297,8 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
                     </FormDescription>
                     <FormControl>
                       <div className="inline-flex w-full md:max-w-sm">
-                        <div className="bg-muted text-muted-foreground border border-muted rounded-l-md flex items-center px-3">
-                          <span className="text-sm font-medium">
+                        <div className="flex items-center rounded-l-md border border-muted bg-muted px-3 text-muted-foreground">
+                          <span className="font-medium text-sm">
                             {APP_CONFIG_PUBLIC.APP_URL.replace(
                               /https?:\/\//g,
                               "",
@@ -318,8 +318,8 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex justify-between border-t py-3 min-h-12">
-              <p className="text-sm text-muted-foreground pr-4">
+            <CardFooter className="flex min-h-12 justify-between border-t py-3">
+              <p className="pr-4 text-muted-foreground text-sm">
                 Please use 48 characters maximum.
               </p>
               <LoadingButton
@@ -341,13 +341,13 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
       <Card className="bg-muted/50">
         <Form {...updateEmailForm}>
           <form onSubmit={updateEmailForm.handleSubmit(onUpdateEmail)}>
-            <CardContent className="p-6 flex flex-col gap-2">
+            <CardContent className="flex flex-col gap-2 p-6">
               <FormField
                 control={updateEmailForm.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-2xl font-semibold">
+                    <FormLabel className="font-semibold text-2xl">
                       Email
                     </FormLabel>
                     <FormDescription>
@@ -365,8 +365,8 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex justify-between border-t py-3 min-h-12">
-              <p className="text-sm text-muted-foreground pr-4">
+            <CardFooter className="flex min-h-12 justify-between border-t py-3">
+              <p className="pr-4 text-muted-foreground text-sm">
                 Please use a valid email address.
               </p>
               <LoadingButton
@@ -384,9 +384,9 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
 
       {/* Sessions Section */}
       <Card className="bg-muted/50">
-        <CardContent className="p-6 flex flex-col gap-2">
-          <h2 className="text-2xl font-semibold">Active Sessions</h2>
-          <p className="text-sm text-muted-foreground">
+        <CardContent className="flex flex-col gap-2 p-6">
+          <h2 className="font-semibold text-2xl">Active Sessions</h2>
+          <p className="text-muted-foreground text-sm">
             Manage their active sessions and sign out from other devices.
           </p>
           <DataTable
@@ -402,10 +402,10 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
       </Card>
 
       {/* Delete Account Section */}
-      <Card className="bg-muted/50 border border-destructive">
-        <CardContent className="p-6 flex flex-col gap-2">
+      <Card className="border border-destructive bg-muted/50">
+        <CardContent className="flex flex-col gap-2 p-6">
           <div className="flex flex-col gap-1">
-            <h2 className="text-2xl font-semibold text-destructive">
+            <h2 className="font-semibold text-2xl text-destructive">
               Delete Account
             </h2>
             <p className="text-sm">
@@ -414,7 +414,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-end border-t border-destructive bg-destructive/10 py-3 min-h-12">
+        <CardFooter className="flex min-h-12 justify-end border-destructive border-t bg-destructive/10 py-3">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <LoadingButton

@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check .",
+    "lint": "biome check . --write",
     "vercel-build": "prisma generate --no-engine && prisma migrate deploy && next build"
   },
   "dependencies": {

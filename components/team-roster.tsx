@@ -93,10 +93,10 @@ export function TeamRoster({ members }: RosterProps) {
       <Card className="flex h-[200px] items-center justify-center text-center">
         <CardContent>
           <User2Icon className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-lg font-medium text-muted-foreground">
+          <p className="mt-4 font-medium text-lg text-muted-foreground">
             No team members found
           </p>
-          <p className="text-sm text-muted-foreground/80">
+          <p className="text-muted-foreground/80 text-sm">
             Team members will appear here once they are added.
           </p>
         </CardContent>
@@ -119,7 +119,7 @@ export function TeamRoster({ members }: RosterProps) {
               >
                 {specialtyLabels[specialty as keyof typeof specialtyLabels]}
               </Badge>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 ({players.length})
               </span>
             </CardTitle>
@@ -146,7 +146,7 @@ export function TeamRoster({ members }: RosterProps) {
                   </Avatar>
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium leading-none">
+                      <p className="font-medium text-sm leading-none">
                         {player.displayName || player.username}
                       </p>
                       {player.roles.includes(Role.COACH) && (
@@ -161,7 +161,7 @@ export function TeamRoster({ members }: RosterProps) {
                       )}
                     </div>
                     {player.isSubstitute && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         Substitute Player
                       </p>
                     )}
