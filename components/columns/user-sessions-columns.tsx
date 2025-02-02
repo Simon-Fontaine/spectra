@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils";
 import type { DataTableFilterField } from "@/types/data-table";
 import type { CleanSession } from "@/types/models";
 import type { ColumnDef } from "@tanstack/react-table";
-import { SessionRowActions } from "./row-actions";
+import { SessionRowActions } from "./user-sessions-row-actions";
 
 export const filterFields: DataTableFilterField<CleanSession>[] = [
   {

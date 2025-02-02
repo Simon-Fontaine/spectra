@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  handleDeleteUser,
+  handleUserDisplayNameUpdate,
+  handleUserEmailUpdate,
+  handleUserUsernameUpdate,
+} from "@/actions/user-management";
+import {
+  columns,
+  filterFields,
+} from "@/components/columns/user-sessions-columns";
 import { DataTable } from "@/components/data-table/data-table";
 import LoadingButton from "@/components/loading-button";
 import {
@@ -37,13 +47,6 @@ import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { handleDeleteUser } from "../../_lib/actions";
-import {
-  handleUserEmailUpdate,
-  handleUserNameUpdate,
-  handleUserUsernameUpdate,
-} from "../_lib/actions";
-import { columns, filterFields } from "./columns";
 
 const updateDisplayNameSchema = z.object({
   displayName: getDisplayNameSchema(),
@@ -63,45 +66,49 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
   /* ------------------------
    * Display Name Section
    * ------------------------*/
-  const updateNameForm = useForm<z.infer<typeof updateDisplayNameSchema>>({
+  const updateDisplayNameForm = useForm<
+    z.infer<typeof updateDisplayNameSchema>
+  >({
     resolver: zodResolver(updateDisplayNameSchema),
     defaultValues: {
       displayName: user.displayName || undefined,
     },
   });
 
-  const { execute: executeUpdateName, isPending: isUpdateNamePending } =
-    useAction(handleUserNameUpdate, {
-      onExecute: () => {
-        toastRef.current = toast.loading("Updating user name...");
-      },
-      onSuccess: ({ data }) => {
-        toast.success(data?.message, {
-          id: toastRef.current,
-        });
-        toastRef.current = undefined;
-      },
-      onError: ({ error }) => {
-        const { serverError, validationErrors } = error;
+  const {
+    execute: executeUpdateDisplayName,
+    isPending: isUpdateDisplayNamePending,
+  } = useAction(handleUserDisplayNameUpdate, {
+    onExecute: () => {
+      toastRef.current = toast.loading("Updating display name...");
+    },
+    onSuccess: ({ data }) => {
+      toast.success(data?.message, {
+        id: toastRef.current,
+      });
+      toastRef.current = undefined;
+    },
+    onError: ({ error }) => {
+      const { serverError, validationErrors } = error;
 
-        let errorMessage =
-          serverError || "Something went wrong. Please try again later.";
+      let errorMessage =
+        serverError || "Something went wrong. Please try again later.";
 
-        if (validationErrors?.formErrors) {
-          errorMessage = Object.values(validationErrors.formErrors).join(", ");
-        }
+      if (validationErrors?.formErrors) {
+        errorMessage = Object.values(validationErrors.formErrors).join(", ");
+      }
 
-        toast.error(errorMessage, {
-          id: toastRef.current,
-        });
-        toastRef.current = undefined;
-      },
-    });
+      toast.error(errorMessage, {
+        id: toastRef.current,
+      });
+      toastRef.current = undefined;
+    },
+  });
 
   const onUpdateName = async (
     values: z.infer<typeof updateDisplayNameSchema>,
   ) => {
-    executeUpdateName({
+    executeUpdateDisplayName({
       userId: user.id,
       displayName: values.displayName,
     });
@@ -120,7 +127,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
   const { execute: executeUpdateUsername, isPending: isUpdateUsernamePending } =
     useAction(handleUserUsernameUpdate, {
       onExecute: () => {
-        toastRef.current = toast.loading("Updating user username...");
+        toastRef.current = toast.loading("Updating username...");
       },
       onSuccess: ({ data }) => {
         toast.success(data?.message, {
@@ -167,7 +174,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
   const { execute: executeUpdateEmail, isPending: isUpdateEmailPending } =
     useAction(handleUserEmailUpdate, {
       onExecute: () => {
-        toastRef.current = toast.loading("Updating user email...");
+        toastRef.current = toast.loading("Updating email...");
       },
       onSuccess: ({ data }) => {
         toast.success(data?.message, {
@@ -205,7 +212,7 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
   const { execute: executeDeleteAccount, isPending: isDeleteAccountPending } =
     useAction(handleDeleteUser, {
       onExecute: () => {
-        toastRef.current = toast.loading("Deleting user account...");
+        toastRef.current = toast.loading("Deleting account...");
       },
       onSuccess: ({ data }) => {
         toast.success(data?.message, {
@@ -234,11 +241,11 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
     <>
       {/* Display Name Section */}
       <Card className="bg-muted/50">
-        <Form {...updateNameForm}>
-          <form onSubmit={updateNameForm.handleSubmit(onUpdateName)}>
+        <Form {...updateDisplayNameForm}>
+          <form onSubmit={updateDisplayNameForm.handleSubmit(onUpdateName)}>
             <CardContent className="flex flex-col gap-2 p-6">
               <FormField
-                control={updateNameForm.control}
+                control={updateDisplayNameForm.control}
                 name="displayName"
                 render={({ field }) => (
                   <FormItem>
@@ -267,9 +274,10 @@ export function UserEditForms({ user }: { user: UserWithSessions }) {
               <LoadingButton
                 size="sm"
                 pendingText="Saving..."
-                pending={isUpdateNamePending}
+                pending={isUpdateDisplayNamePending}
                 disabled={
-                  user.displayName === updateNameForm.getValues().displayName
+                  user.displayName ===
+                  updateDisplayNameForm.getValues().displayName
                 }
               >
                 Save

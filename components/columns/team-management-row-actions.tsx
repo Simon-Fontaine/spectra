@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  handleUpdateUserSpecialty,
+  handleUpdateUserSubstitute,
+} from "@/actions/admin-management";
 import { getSpecialtyIcon, sanitizeString } from "@/lib/utils/table";
 import {
   EllipsisIcon,
@@ -10,10 +14,6 @@ import {
 } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
-import {
-  handleUpdateUserSpecialty,
-  handleUpdateUserSubstitute,
-} from "../_lib/actions";
 
 import { Button } from "@/components/ui/button";
 import {

@@ -3,12 +3,13 @@
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getSpecialtyIcon, sanitizeString } from "@/lib/utils/table";
+import { formatDate } from "@/lib/utils";
+import { getRoleIcon, sanitizeString } from "@/lib/utils/table";
 import type { DataTableFilterField } from "@/types/data-table";
 import type { CleanUser } from "@/types/models";
-import { Specialty } from "@prisma/client";
+import { Role } from "@prisma/client";
 import type { ColumnDef } from "@tanstack/react-table";
-import { TeamMemberRowActions } from "./row-actions";
+import { UserRowActions } from "./user-management-row-actions";
 
 export const filterFields: DataTableFilterField<CleanUser>[] = [
   {
@@ -17,12 +18,12 @@ export const filterFields: DataTableFilterField<CleanUser>[] = [
     placeholder: "Filter usernames...",
   },
   {
-    id: "specialty",
-    label: "Specialty",
-    options: Object.values(Specialty).map((specialty) => ({
-      label: sanitizeString(specialty),
-      value: specialty,
-      icon: getSpecialtyIcon(specialty),
+    id: "roles",
+    label: "Roles",
+    options: Object.values(Role).map((role) => ({
+      label: sanitizeString(role),
+      value: role,
+      icon: getRoleIcon(role),
     })),
   },
 ];
@@ -53,14 +54,14 @@ export const columns: ColumnDef<CleanUser>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "username",
+    accessorKey: "email",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Username" />
+      <DataTableColumnHeader className="ml-2" column={column} title="Email" />
     ),
     cell: ({ row }) => {
       return (
         <div className="max-w-[31.25rem] truncate font-medium">
-          {row.getValue("username")}
+          {row.getValue("email")}
         </div>
       );
     },
@@ -68,57 +69,69 @@ export const columns: ColumnDef<CleanUser>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "battletag",
+    accessorKey: "username",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Battle Tag" />
+      <DataTableColumnHeader column={column} title="Username" />
     ),
     cell: ({ row }) => {
       return (
         <div className="max-w-[31.25rem] truncate">
-          {row.getValue("battletag") || "-"}
+          {row.getValue("username")}
         </div>
       );
     },
   },
   {
-    accessorKey: "specialty",
+    accessorKey: "displayName",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Specialty" />
+      <DataTableColumnHeader column={column} title="Display Name" />
     ),
     cell: ({ row }) => {
-      const role = Object.values(Specialty).find(
-        (role) => role === row.original.specialty,
-      );
-
-      if (!role) return null;
-
-      const Icon = getSpecialtyIcon(role);
-
       return (
-        <div className="flex w-[6.25rem] items-center">
-          <Icon
-            className="mr-2 size-4 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <span className="capitalize">{sanitizeString(role)}</span>
+        <div className="max-w-[31.25rem] truncate">
+          {row.getValue("displayName") || "-"}
         </div>
       );
     },
   },
   {
-    accessorKey: "isSubstitute",
+    accessorKey: "roles",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Substitute" />
+      <DataTableColumnHeader column={column} title="Roles" />
+    ),
+    cell: ({ row }) => {
+      const roles = row.getValue("roles") as Role[];
+      const roleString = roles.map((role) => sanitizeString(role)).join(", ");
+
+      return <div className="flex w-[100px] items-center">{roleString}</div>;
+    },
+    filterFn: (row, id, value) => {
+      return value.some((role: Role) =>
+        (row.getValue(id) as Role[]).includes(role),
+      );
+    },
+  },
+  {
+    accessorKey: "isEmailVerified",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email Verified" />
     ),
     cell: ({ row }) => (
       <Badge variant="outline">
-        {row.original.isSubstitute ? "Yes" : "No"}
+        {row.original.isEmailVerified ? "Yes" : "No"}
       </Badge>
     ),
   },
   {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created At" />
+    ),
+    cell: ({ cell }) => formatDate(cell.getValue() as Date),
+  },
+  {
     id: "actions",
-    cell: ({ row }) => <TeamMemberRowActions row={row} />,
+    cell: ({ row }) => <UserRowActions row={row} />,
     size: 40,
   },
 ];

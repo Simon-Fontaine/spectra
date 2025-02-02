@@ -1,5 +1,7 @@
 "use client";
 
+import { handleUpdateUserRole } from "@/actions/admin-management";
+import { handleDeleteUser } from "@/actions/user-management";
 import LoadingButton from "@/components/loading-button";
 import {
   AlertDialog,
@@ -33,7 +35,6 @@ import { useAction } from "next-safe-action/hooks";
 import Link from "next/link";
 import { useRef } from "react";
 import { toast } from "sonner";
-import { handleDeleteUser, handleUpdateUserRole } from "../_lib/actions";
 
 export function UserRowActions({ row }: { row: Row<CleanUser> }) {
   const toastRef = useRef<string | number | undefined>(undefined);
@@ -69,7 +70,7 @@ export function UserRowActions({ row }: { row: Row<CleanUser> }) {
   const { execute: executeDeleteUser, isPending: isDeleteUserPending } =
     useAction(handleDeleteUser, {
       onExecute: () => {
-        toastRef.current = toast.loading("Deleting user...");
+        toastRef.current = toast.loading("Deleting account...");
       },
       onSuccess: ({ data }) => {
         toast.success(data?.message, {

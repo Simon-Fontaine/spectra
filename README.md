@@ -1,6 +1,6 @@
 # Spectra Self-Auth
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Simon-Fontaine/spectra-self-auth?tab=MIT-1-ov-file)
 
 **Spectra Self-Auth** is a **Next.js 15+** application designed primarily for Overwatch 2 e-sport **team management**—including rosters, schedules, and admin tooling—while showcasing a robust, **reusable** custom authentication system. Its modular auth logic (featuring sessions, CSRF tokens, email verification, and rate-limiting) can be easily **ported** or **adapted** into other Next.js projects.
 
@@ -235,7 +235,7 @@ Thank you for helping improve **Spectra Self-Auth**!
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE). Feel free to modify or adapt for commercial and personal use.
+This project is licensed under the [MIT License](https://github.com/Simon-Fontaine/spectra-self-auth?tab=MIT-1-ov-file). Feel free to modify or adapt for commercial and personal use.
 
 ---
 

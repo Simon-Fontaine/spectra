@@ -108,7 +108,7 @@ export const APP_NAVIGATION = [
 export const DASHBOARD_MAIN_NAVIGATION = [
   {
     title: "Team",
-    url: "#",
+    url: "/dashboard/team",
     icon: Users2Icon,
     isActive: true,
     items: [
@@ -128,7 +128,7 @@ export const DASHBOARD_MAIN_NAVIGATION = [
   },
   {
     title: "Schedule",
-    url: "#",
+    url: "/dashboard/schedule",
     icon: CalendarSyncIcon,
     items: [
       {
@@ -143,7 +143,7 @@ export const DASHBOARD_MAIN_NAVIGATION = [
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/dashboard/settings",
     icon: Settings2Icon,
     items: [
       {

@@ -33,7 +33,10 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
-  const isActive = (url: string) => pathname.startsWith(url);
+  const isActive = (url: string) => {
+    if (url === "/") return pathname === "/";
+    return pathname.startsWith(url);
+  };
 
   return (
     <SidebarGroup>

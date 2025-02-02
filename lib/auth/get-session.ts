@@ -1,6 +1,7 @@
 import { getSessionFromToken } from "@/lib/auth/session";
 import type { SessionWithUser } from "@/types/models";
 import { cookies } from "next/headers";
+import { cleanSessionWithUser } from "../utils/cleanData";
 
 /**
  * Retrieves a session from the 'session_token' cookie if present.
@@ -17,14 +18,5 @@ export async function getSession(): Promise<SessionWithUser | null> {
 
   if (!session) return null;
 
-  // Clean up the session before sending
-  const { token, csrfSecret, user, ...sessionRest } = session;
-  const { password, ...userRest } = user;
-
-  const cleanedSession = {
-    ...sessionRest,
-    user: userRest,
-  };
-
-  return cleanedSession;
+  return cleanSessionWithUser(session);
 }

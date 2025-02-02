@@ -1,7 +1,7 @@
 import {
   columns,
   filterFields,
-} from "@/app/dashboard/admin/user-management/_components/columns";
+} from "@/components/columns/user-management-columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { PageHeaderHeading } from "@/components/page-header";
 import prisma from "@/lib/prisma";

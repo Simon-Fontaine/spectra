@@ -1,8 +1,11 @@
+import {
+  columns,
+  filterFields,
+} from "@/components/columns/team-management-columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { PageHeaderHeading } from "@/components/page-header";
 import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
-import { columns, filterFields } from "./_components/columns";
 
 export default async function DashboardAdminTeamManagementPage() {
   const users = await prisma.user.findMany({

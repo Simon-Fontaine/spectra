@@ -1,5 +1,6 @@
 "use client";
 
+import { handleInviteUser } from "@/actions/admin-management";
 import LoadingButton from "@/components/loading-button";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -36,7 +37,6 @@ import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
-import { handleInviteUser } from "../_lib/actions";
 
 export function InviteUserDialog() {
   const toastRef = useRef<string | number | undefined>(undefined);

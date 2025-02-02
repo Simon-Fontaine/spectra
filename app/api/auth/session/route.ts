@@ -1,4 +1,5 @@
 import { getSessionFromToken } from "@/lib/auth/session";
+import { cleanSessionWithUser } from "@/lib/utils/cleanData";
 import { NextResponse } from "next/server";
 
 /**
@@ -26,14 +27,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ session: null });
   }
 
-  // Clean up the session before sending
-  const { token, csrfSecret, user, ...sessionRest } = session;
-  const { password, ...userRest } = user;
-
-  const cleanedSession = {
-    ...sessionRest,
-    user: userRest,
-  };
-
-  return NextResponse.json({ session: cleanedSession });
+  return NextResponse.json({ session: cleanSessionWithUser(session) });
 }

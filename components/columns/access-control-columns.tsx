@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils";
 import type { DataTableFilterField } from "@/types/data-table";
 import type { Invitation } from "@prisma/client";
 import type { ColumnDef } from "@tanstack/react-table";
-import { InvitationRowActions } from "./row-actions";
+import { InvitationRowActions } from "./access-control-row-actions";
 
 export const filterFields: DataTableFilterField<Invitation>[] = [
   {

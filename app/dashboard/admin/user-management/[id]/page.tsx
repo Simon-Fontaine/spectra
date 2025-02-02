@@ -1,3 +1,4 @@
+import { UserEditForms } from "@/components/forms/useredit-form";
 import { PageHeaderHeading } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,8 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
+import { cleanUserWithSessions } from "@/lib/utils/cleanData";
 import Link from "next/link";
-import { UserEditForms } from "./_components/useredit-form";
 
 interface DashboardUserEditPageProps {
   params: Promise<{ id: string }>;
@@ -22,9 +23,6 @@ export default async function DashboardUserEditPage(
   const user = await prisma.user.findUnique({
     where: {
       id: id,
-    },
-    omit: {
-      password: true,
     },
     include: { sessions: true },
   });
@@ -55,11 +53,14 @@ export default async function DashboardUserEditPage(
     );
   }
 
+  const cleanedUser = cleanUserWithSessions(user);
+  const username = cleanedUser.displayName || cleanedUser.username;
+
   return (
     <div className="flex flex-1 flex-col gap-10 p-4">
-      <PageHeaderHeading>Manage {user.username}'s Account</PageHeaderHeading>
+      <PageHeaderHeading>Manage {username}'s Account</PageHeaderHeading>
 
-      <UserEditForms user={user} />
+      <UserEditForms user={cleanedUser} />
     </div>
   );
 }
