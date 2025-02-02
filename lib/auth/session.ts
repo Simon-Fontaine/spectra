@@ -79,15 +79,23 @@ export async function getSessionFromToken(rawToken: string) {
     return null;
   }
 
-  // Sliding expiration: update expiresAt to now + X minutes
-  const newExpires = new Date(
-    Date.now() + APP_CONFIG_PRIVATE.SESSION_EXPIRATION_MINUTES * 60_000,
-  );
+  const now = Date.now();
+  const sessionExpiryTime = session.expiresAt.getTime();
+  const remainingTime = sessionExpiryTime - now;
+  const sessionDuration =
+    APP_CONFIG_PRIVATE.SESSION_EXPIRATION_MINUTES * 60_000;
 
-  await prisma.session.update({
-    where: { id: session.id },
-    data: { expiresAt: newExpires },
-  });
+  // Define a threshold (e.g., update only if less than half the duration remains)
+  const threshold = sessionDuration * 0.5;
+
+  // Sliding expiration: update expiresAt to now + X minutes
+  if (remainingTime < threshold) {
+    const newExpires = new Date(now + sessionDuration);
+    await prisma.session.update({
+      where: { id: session.id },
+      data: { expiresAt: newExpires },
+    });
+  }
 
   return session;
 }
