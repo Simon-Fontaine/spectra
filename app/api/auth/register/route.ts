@@ -3,6 +3,13 @@ import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { consumeInvitation, registerUser } from "@/lib/auth/user";
 import { createVerificationToken } from "@/lib/auth/verification";
 import { resend } from "@/lib/email/resend";
+import SpectraUserVerifyEmail from "@/lib/email/user-verify-email";
+import {
+  cleanIpAddress,
+  cleanUserAgent,
+  getDeviceType,
+  getLocationFromIp,
+} from "@/lib/utils/requestDetails";
 import { apiSignUpSchema } from "@/lib/zod";
 import { VerificationType } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -61,12 +68,25 @@ export async function POST(request: Request) {
     );
     const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/email/verify?token=${token}`;
 
+    const ip = cleanIpAddress(request.headers.get("x-forwarded-for"));
+    const ua = cleanUserAgent(request.headers.get("user-agent"));
+    const device = getDeviceType(ua);
+    const geo = await getLocationFromIp(ip);
+    const location = `${geo.city}, ${geo.subdivision}, ${geo.country}`;
+
     // Send verification email
     await resend.emails.send({
       from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
       to: email,
       subject: "Verify your email",
-      text: `Thanks for registering, ${username}! Verify here: ${verifyUrl}`,
+      react: SpectraUserVerifyEmail({
+        email: email,
+        verifyLink: verifyUrl,
+        ipAddress: ip,
+        userAgent: ua,
+        location: location,
+        device: device,
+      }),
     });
 
     return NextResponse.json({

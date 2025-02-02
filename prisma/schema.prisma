@@ -27,6 +27,7 @@ model User {
   id              String         @id @default(uuid())
   username        String         @unique
   email           String         @unique
+  pendingEmail    String?
   password        String
   roles           Role[]         @default([USER])
   displayName     String?
@@ -72,7 +73,6 @@ model Verification {
   userId    String
   token     String           @unique
   type      VerificationType
-  newEmail  String?          @unique
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime         @default(now())

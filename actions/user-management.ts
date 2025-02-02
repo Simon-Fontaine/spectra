@@ -1,7 +1,9 @@
 "use server";
 
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import { createVerificationToken } from "@/lib/auth/verification";
 import { resend } from "@/lib/email/resend";
+import SpectraUserChangeEmail from "@/lib/email/user-change-email";
 import prisma from "@/lib/prisma";
 import { ActionError, adminOrSelfActionClient } from "@/lib/safe-action";
 import {
@@ -9,8 +11,8 @@ import {
   getEmailSchema,
   getUsernameSchema,
 } from "@/lib/zod";
+import { Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { z } from "zod";
 
 /**
@@ -152,18 +154,24 @@ export const handleUserEmailUpdate = adminOrSelfActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      const isAdminAction = ctx.session.user.id !== userId;
-      if (isAdminAction) {
-        const existingEmailUser = await prisma.user.findFirst({
-          where: { email },
-        });
-        if (existingEmailUser) {
-          throw new ActionError("User email already exists.");
-        }
+      const existingEmailUser = await prisma.user.findFirst({
+        where: { email },
+      });
+      if (existingEmailUser) {
+        throw new ActionError("That email address is already in use.");
+      }
 
+      const isAdminAction =
+        ctx.session.user.id !== userId &&
+        ctx.session.user.roles.includes(Role.ADMIN);
+
+      if (isAdminAction) {
         await prisma.user.update({
           where: { id: userId },
-          data: { email },
+          data: {
+            email,
+            pendingEmail: null,
+          },
         });
 
         await resend.emails.send({
@@ -172,36 +180,41 @@ export const handleUserEmailUpdate = adminOrSelfActionClient
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} account was updated by an admin`,
           text: `Your account email was updated by an admin. Your new email is: ${email}`,
         });
+
         return {
           success: true,
           message: "User email updated successfully.",
         };
       }
 
-      const formData = new FormData();
-      formData.append("newEmail", email);
-
-      const cookieStore = await cookies();
-      const cookieHeader = cookieStore.toString();
-
-      const response = await fetch(
-        `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/email/change`,
-        {
-          method: "POST",
-          headers: {
-            cookie: cookieHeader,
-          },
-          body: formData,
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          pendingEmail: email,
         },
-      );
+      });
 
-      if (!response.ok) {
-        throw new ActionError("Failed to send email verification.");
-      }
+      const token = await createVerificationToken(userId, "EMAIL_CHANGE", 24);
+      const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/email/change/confirm?token=${token}`;
+
+      await resend.emails.send({
+        from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
+        to: email,
+        subject: "Confirm your new email",
+        react: SpectraUserChangeEmail({
+          currentEmail: existingUser.email,
+          newEmail: email,
+          changeEmailLink: verifyUrl,
+          ipAddress: ctx.session.ipAddress || "",
+          userAgent: ctx.session.userAgent || "",
+          location: ctx.session.location || "",
+          device: ctx.session.device || "",
+        }),
+      });
 
       return {
         success: true,
-        message: "If that email is valid, a link was sent.",
+        message: `We've sent a verification link to ${email}. Check your inbox.`,
       };
     },
     {

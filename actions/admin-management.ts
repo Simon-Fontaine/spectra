@@ -1,9 +1,11 @@
 "use server";
 
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
+import SpectraAdminInvitationEmail from "@/lib/email/admin-user-invitation";
 import { resend } from "@/lib/email/resend";
 import prisma from "@/lib/prisma";
 import { ActionError, adminActionClient } from "@/lib/safe-action";
+import { formatDate } from "@/lib/utils";
 import {
   getEmailSchema,
   getRoleSchema,
@@ -53,7 +55,7 @@ export const handleUpdateUserRole = adminActionClient
     },
     {
       async onSuccess() {
-        revalidatePath("/dashboard/admin/user-management");
+        revalidatePath("/dashboard");
       },
       async onError({ error }) {
         console.error("Error updating user role:", error);
@@ -95,7 +97,7 @@ export const handleUpdateUserSubstitute = adminActionClient
     },
     {
       async onSuccess() {
-        revalidatePath("/dashboard/admin/user-management");
+        revalidatePath("/dashboard");
       },
       async onError({ error }) {
         console.error("Error updating user substitute status:", error);
@@ -137,7 +139,7 @@ export const handleUpdateUserSpecialty = adminActionClient
     },
     {
       async onSuccess() {
-        revalidatePath("/dashboard/admin/user-management");
+        revalidatePath("/dashboard");
       },
       async onError({ error }) {
         console.error("Error updating user specialty:", error);
@@ -189,7 +191,15 @@ export const handleInviteUser = adminActionClient
         from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
         to: email,
         subject: `You've been invited to join ${APP_CONFIG_PUBLIC.APP_NAME}`,
-        text: `You've been invited to join ${APP_CONFIG_PUBLIC.APP_NAME}. Click on the following link to create your account: ${APP_CONFIG_PUBLIC.APP_URL}/signup`,
+        react: SpectraAdminInvitationEmail({
+          invitedEmail: email,
+          adminEmail: ctx.session.user.email,
+          inviteLink: `${APP_CONFIG_PUBLIC.APP_URL}/sign-up`,
+          expirationDate: formatDate(expiresAt, {
+            hour: "numeric",
+            minute: "numeric",
+          }),
+        }),
       });
 
       return {

@@ -30,6 +30,7 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.5",
     "@radix-ui/react-tooltip": "^1.1.7",
+    "@react-email/components": "^0.0.32",
     "@tanstack/react-table": "^8.20.6",
     "@upstash/qstash": "^2.7.20",
     "@upstash/ratelimit": "^2.0.5",

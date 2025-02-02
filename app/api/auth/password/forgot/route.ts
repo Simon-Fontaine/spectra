@@ -1,9 +1,15 @@
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { createVerificationToken } from "@/lib/auth/verification";
 import { resend } from "@/lib/email/resend";
+import SpectraResetPasswordEmail from "@/lib/email/user-reset-password";
 import prisma from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { cleanIpAddress } from "@/lib/utils/requestDetails";
+import {
+  cleanIpAddress,
+  cleanUserAgent,
+  getDeviceType,
+  getLocationFromIp,
+} from "@/lib/utils/requestDetails";
 import { VerificationType } from "@prisma/client";
 import { Ratelimit } from "@upstash/ratelimit";
 import { NextResponse } from "next/server";
@@ -57,11 +63,23 @@ export async function POST(request: Request) {
     );
     const resetUrl = `${APP_CONFIG_PUBLIC.APP_URL}/reset-password?token=${token}`;
 
+    const ua = cleanUserAgent(request.headers.get("user-agent"));
+    const device = getDeviceType(ua);
+    const geo = await getLocationFromIp(ip);
+    const location = `${geo.city}, ${geo.subdivision}, ${geo.country}`;
+
     await resend.emails.send({
       from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
       to: email,
       subject: "Reset your password",
-      text: `Forgot password? Reset here: ${resetUrl}`,
+      react: SpectraResetPasswordEmail({
+        email,
+        resetLink: resetUrl,
+        ipAddress: ip,
+        userAgent: ua,
+        location: location,
+        device: device,
+      }),
     });
 
     return NextResponse.json({

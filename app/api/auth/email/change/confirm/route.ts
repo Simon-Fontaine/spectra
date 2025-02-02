@@ -3,17 +3,13 @@ import prisma from "@/lib/prisma";
 import { VerificationType } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-/**
- * Confirms the user's new email.
- * GET /api/auth/email/change/confirm?token=xxx
- */
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const token = url.searchParams.get("token");
     if (!token) {
       return NextResponse.json(
-        { success: false, error: "No token." },
+        { success: false, error: "No token provided." },
         { status: 400 },
       );
     }
@@ -22,16 +18,36 @@ export async function GET(request: Request) {
       token,
       VerificationType.EMAIL_CHANGE,
     );
-    if (!verification || !verification.newEmail) {
+    if (!verification) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired token." },
         { status: 400 },
       );
     }
 
-    await prisma.user.update({
+    const user = await prisma.user.findUnique({
       where: { id: verification.userId },
-      data: { email: verification.newEmail },
+    });
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "User not found." },
+        { status: 404 },
+      );
+    }
+
+    if (!user.pendingEmail) {
+      return NextResponse.json(
+        { success: false, error: "No pending email found." },
+        { status: 400 },
+      );
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        email: user.pendingEmail,
+        pendingEmail: null,
+      },
     });
 
     return NextResponse.redirect(
