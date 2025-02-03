@@ -1,4 +1,6 @@
 {
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run vercel-build",
   "crons": [
     {
       "path": "/api/cron/cleanup-sessions",
