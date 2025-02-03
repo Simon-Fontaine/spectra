@@ -1,6 +1,5 @@
 import { updateUserPassword } from "@/lib/auth/user";
 import { consumeVerificationToken } from "@/lib/auth/verification";
-import { VerificationType } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 /**
@@ -20,10 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const verification = await consumeVerificationToken(
-      token,
-      VerificationType.PASSWORD_RESET,
-    );
+    const verification = await consumeVerificationToken(token);
     if (!verification) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired token." },
