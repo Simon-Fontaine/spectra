@@ -36,16 +36,11 @@ export async function createVerificationToken(
  * Returns the verification record or null if invalid/expired.
  *
  * @param token - The verification token.
- * @param type - The verification type for validation.
  */
-export async function consumeVerificationToken(
-  token: string,
-  type: VerificationType,
-) {
+export async function consumeVerificationToken(token: string) {
   const verification = await prisma.verification.findFirst({
     where: {
       token,
-      type,
       usedAt: null,
       expiresAt: { gte: new Date() },
     },

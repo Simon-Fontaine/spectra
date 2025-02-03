@@ -11,12 +11,21 @@ export const metadata: Metadata = {
 };
 
 interface SignInPageProps {
-  searchParams: Promise<{ verified: string }>;
+  searchParams: Promise<{ verified: string; accountDeleted: string }>;
+}
+
+function SuccessAlert({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border bg-green-100 p-4 text-center text-green-800 shadow">
+      {children}
+    </div>
+  );
 }
 
 export default async function SignInPage(props: SignInPageProps) {
-  const { verified } = await props.searchParams;
+  const { verified, accountDeleted } = await props.searchParams;
   const isVerified = verified === "true";
+  const isAccountDeleted = accountDeleted === "true";
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
@@ -31,9 +40,15 @@ export default async function SignInPage(props: SignInPageProps) {
           {APP_CONFIG_PUBLIC.APP_NAME}
         </Link>
         {isVerified && (
-          <div className="rounded-xl border bg-green-100 p-4 text-green-800 shadow">
+          <SuccessAlert>
             Your email has been confirmed. You can now log in below.
-          </div>
+          </SuccessAlert>
+        )}
+        {isAccountDeleted && (
+          <SuccessAlert>
+            Account deletion request has been successfully processed. You can no
+            longer log in.
+          </SuccessAlert>
         )}
         <SignInForm />
       </div>

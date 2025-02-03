@@ -123,7 +123,7 @@ export const SpectraUserChangeEmail = ({
 SpectraUserChangeEmail.PreviewProps = {
   currentEmail: "old@domain.com",
   newEmail: "new@domain.com",
-  changeEmailLink: "https://spectra.com/api/auth/email/confirm?token=abc123",
+  changeEmailLink: "https://spectra.com/api/auth/confirm?token=abc123",
   ipAddress: "127.0.0.1",
   location: "Brussels, Brussels Capital, Belgium",
   device: "Desktop",

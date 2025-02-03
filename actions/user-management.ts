@@ -195,7 +195,7 @@ export const handleUserEmailUpdate = adminOrSelfActionClient
       });
 
       const token = await createVerificationToken(userId, "EMAIL_CHANGE", 24);
-      const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/email/change/confirm?token=${token}`;
+      const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/confirm?token=${token}`;
 
       await resend.emails.send({
         from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
@@ -358,43 +358,52 @@ export const handleDeleteUser = adminOrSelfActionClient
         throw new ActionError("No user found with the provided ID.");
       }
 
-      const deletedUser = await prisma.user.delete({
-        where: { id: userId },
-      });
-
-      if (!deletedUser) {
-        throw new ActionError("No users deleted with the provided ID.");
-      }
-
       const isAdminAction = ctx.session.user.id !== userId;
+
       if (isAdminAction) {
+        const deletedUser = await prisma.user.delete({
+          where: { id: userId },
+        });
+
+        if (!deletedUser) {
+          throw new ActionError("No users deleted with the provided ID.");
+        }
+
         await resend.emails.send({
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: deletedUser.email,
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} account was deleted by an admin`,
           text: "Your account was deleted by an admin.",
         });
+
         return {
           success: true,
           message: "User deleted successfully.",
         };
       }
 
+      const token = await createVerificationToken(
+        userId,
+        "ACCOUNT_DELETION",
+        24,
+      );
+      const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/confirm?token=${token}`;
+
       await resend.emails.send({
         from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
-        to: deletedUser.email,
-        subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} account was deleted`,
-        text: "Your account was deleted.",
+        to: existingUser.email,
+        subject: "Confirm your account deletion",
+        text: `You requested to delete your account. Please confirm your account deletion by clicking on the following link: ${verifyUrl}`,
       });
 
       return {
         success: true,
-        message: "Your account has been deleted successfully.",
+        message: `We've sent a confirmation link to ${existingUser.email}. Please check your inbox to confirm your account deletion.`,
       };
     },
     {
       async onSuccess() {
-        revalidatePath("/dashboard/admin/user-management");
+        revalidatePath("/dashboard");
       },
       async onError({ error }) {
         console.error("Error deleting user:", error);

@@ -121,7 +121,7 @@ export const SpectraUserVerifyEmail = ({
 SpectraUserVerifyEmail.PreviewProps = {
   email: "someone@example.com",
   verifyLink:
-    "http://localhost:3000/api/auth/email/verify?token=some-super-long-jwt-token...&callbackURL=/",
+    "http://localhost:3000/api/auth/confirm?token=some-super-long-jwt-token...&callbackURL=/",
   ipAddress: "127.0.0.1",
   location: "Brussels, Brussels Capital, Belgium",
   device: "Desktop",

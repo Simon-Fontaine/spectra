@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       VerificationType.EMAIL_VERIFICATION,
       24,
     );
-    const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/email/verify?token=${token}`;
+    const verifyUrl = `${APP_CONFIG_PUBLIC.APP_URL}/api/auth/confirm?token=${token}`;
 
     const ip = cleanIpAddress(request.headers.get("x-forwarded-for"));
     const ua = cleanUserAgent(request.headers.get("user-agent"));
