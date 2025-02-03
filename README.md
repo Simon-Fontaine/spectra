@@ -127,7 +127,7 @@ git clone https://github.com/Simon-Fontaine/spectra-self-auth.git
 
 ```bash
 cd spectra-self-auth
-npm install
+npm install --legacy-peer-deps
 # or yarn install / pnpm install
 ```
 
