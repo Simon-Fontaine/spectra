@@ -16,15 +16,15 @@ import {
 } from "@react-email/components";
 
 interface SpectraAdminInvitationEmailProps {
-  invitedEmail?: string;
-  adminEmail?: string;
-  inviteLink?: string;
+  invitedEmail: string;
+  adminUsername: string;
+  inviteLink: string;
   expirationDate?: string;
 }
 
 export const SpectraAdminInvitationEmail = ({
   invitedEmail,
-  adminEmail,
+  adminUsername,
   inviteLink,
   expirationDate,
 }: SpectraAdminInvitationEmailProps) => {
@@ -55,8 +55,8 @@ export const SpectraAdminInvitationEmail = ({
               Hi {invitedEmail},
             </Text>
             <Text className="text-[#030712] text-[14px] leading-[24px]">
-              An admin (<strong>{adminEmail}</strong>) has invited you to create
-              an account on {APP_CONFIG_PUBLIC.APP_NAME}.
+              An admin (<strong>{adminUsername}</strong>) has invited you to
+              create an account on {APP_CONFIG_PUBLIC.APP_NAME}.
             </Text>
 
             {expirationDate && (
@@ -118,7 +118,7 @@ export const SpectraAdminInvitationEmail = ({
 
 SpectraAdminInvitationEmail.PreviewProps = {
   invitedEmail: "someone@example.com",
-  adminEmail: "admin@owspectra.com",
+  adminUsername: "Admin",
   inviteLink: "https://spectra.com/sign-up",
   expirationDate: "January 25, 2025 at 1:22 PM",
 } as SpectraAdminInvitationEmailProps;

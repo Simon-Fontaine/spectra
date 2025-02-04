@@ -2,8 +2,12 @@
 
 import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { createVerificationToken } from "@/lib/auth/verification";
+import SpectraAccountDeletedByAdmin from "@/lib/email/admin-user-account-deletion";
+import SpectraSessionRevokedByAdmin from "@/lib/email/admin-user-session-revoke";
+import SpectraAdminUserUpdateEmail from "@/lib/email/admin-user-update";
 import { resend } from "@/lib/email/resend";
 import SpectraUserChangeEmail from "@/lib/email/user-change-email";
+import SpectraConfirmAccountDeletion from "@/lib/email/user-delete-account";
 import prisma from "@/lib/prisma";
 import { ActionError, adminOrSelfActionClient } from "@/lib/safe-action";
 import {
@@ -48,7 +52,13 @@ export const handleUserDisplayNameUpdate = adminOrSelfActionClient
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: existingUser.email,
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} account was updated by an admin`,
-          text: `Your account display name was updated by an admin. Your new display name is: ${displayName}`,
+          react: SpectraAdminUserUpdateEmail({
+            email: existingUser.email,
+            changedField: "display name",
+            oldValue: existingUser.displayName || "",
+            newValue: displayName,
+            adminUsername: ctx.session.user.username,
+          }),
         });
         return {
           success: true,
@@ -110,7 +120,13 @@ export const handleUserUsernameUpdate = adminOrSelfActionClient
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: existingUser.email,
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} account was updated by an admin`,
-          text: `Your account username was updated by an admin. Your new username is: ${username}`,
+          react: SpectraAdminUserUpdateEmail({
+            email: existingUser.email,
+            changedField: "username",
+            oldValue: existingUser.username || "",
+            newValue: username,
+            adminUsername: ctx.session.user.username,
+          }),
         });
         return {
           success: true,
@@ -178,7 +194,13 @@ export const handleUserEmailUpdate = adminOrSelfActionClient
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: existingUser.email,
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} account was updated by an admin`,
-          text: `Your account email was updated by an admin. Your new email is: ${email}`,
+          react: SpectraAdminUserUpdateEmail({
+            email: existingUser.email,
+            changedField: "email",
+            oldValue: existingUser.email,
+            newValue: email,
+            adminUsername: ctx.session.user.username,
+          }),
         });
 
         return {
@@ -259,7 +281,10 @@ export const handleRevokeSession = adminOrSelfActionClient
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: existingUser.email,
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} session was revoked by an admin`,
-          text: "A session on your account was revoked by an admin.",
+          react: SpectraSessionRevokedByAdmin({
+            email: existingUser.email,
+            adminUsername: ctx.session.user.username,
+          }),
         });
         return {
           success: true,
@@ -315,7 +340,11 @@ export const handleBulkRevokeSessions = adminOrSelfActionClient
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: existingUser.email,
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} sessions were revoked by an admin`,
-          text: `${count} session(s) on your account were revoked by an admin.`,
+          react: SpectraSessionRevokedByAdmin({
+            email: existingUser.email,
+            adminUsername: ctx.session.user.username,
+            count,
+          }),
         });
         return {
           success: true,
@@ -373,7 +402,10 @@ export const handleDeleteUser = adminOrSelfActionClient
           from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
           to: deletedUser.email,
           subject: `Your ${APP_CONFIG_PUBLIC.APP_NAME} account was deleted by an admin`,
-          text: "Your account was deleted by an admin.",
+          react: SpectraAccountDeletedByAdmin({
+            email: deletedUser.email,
+            adminUsername: ctx.session.user.username,
+          }),
         });
 
         return {
@@ -392,13 +424,20 @@ export const handleDeleteUser = adminOrSelfActionClient
       await resend.emails.send({
         from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
         to: existingUser.email,
-        subject: "Confirm your account deletion",
-        text: `You requested to delete your account. Please confirm your account deletion by clicking on the following link: ${verifyUrl}`,
+        subject: `Confirm your account deletion on ${APP_CONFIG_PUBLIC.APP_NAME}`,
+        react: SpectraConfirmAccountDeletion({
+          email: existingUser.email,
+          deletionLink: verifyUrl,
+          ipAddress: ctx.session.ipAddress || "",
+          userAgent: ctx.session.userAgent || "",
+          location: ctx.session.location || "",
+          device: ctx.session.device || "",
+        }),
       });
 
       return {
         success: true,
-        message: `We've sent a confirmation link to ${existingUser.email}. Please check your inbox to confirm your account deletion.`,
+        message: `We've sent a confirmation link to ${existingUser.email}. Check your inbox.`,
       };
     },
     {

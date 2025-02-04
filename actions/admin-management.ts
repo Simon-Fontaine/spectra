@@ -193,7 +193,7 @@ export const handleInviteUser = adminActionClient
         subject: `You've been invited to join ${APP_CONFIG_PUBLIC.APP_NAME}`,
         react: SpectraAdminInvitationEmail({
           invitedEmail: email,
-          adminEmail: ctx.session.user.email,
+          adminUsername: ctx.session.user.username,
           inviteLink: `${APP_CONFIG_PUBLIC.APP_URL}/sign-up`,
           expirationDate: formatDate(expiresAt, {
             hour: "numeric",

@@ -1,5 +1,8 @@
+import { APP_CONFIG_PUBLIC } from "@/config/config.public";
 import { markEmailVerified } from "@/lib/auth/user";
 import { consumeVerificationToken } from "@/lib/auth/verification";
+import { resend } from "@/lib/email/resend";
+import SpectraAccountDeletionConfirmation from "@/lib/email/user-delete-account-confirm";
 import prisma from "@/lib/prisma";
 import { VerificationType } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -29,7 +32,17 @@ export async function GET(request: Request) {
 
     switch (verification.type) {
       case VerificationType.ACCOUNT_DELETION: {
-        await prisma.user.delete({ where: { id: verification.userId } });
+        const deletedUser = await prisma.user.delete({
+          where: { id: verification.userId },
+        });
+        await resend.emails.send({
+          from: `${APP_CONFIG_PUBLIC.APP_NAME} <${APP_CONFIG_PUBLIC.APP_EMAIL}>`,
+          to: deletedUser.email,
+          subject: `Your account has been permanently deleted from ${APP_CONFIG_PUBLIC.APP_NAME}`,
+          react: SpectraAccountDeletionConfirmation({
+            email: deletedUser.email,
+          }),
+        });
         return NextResponse.redirect(
           new URL("/sign-in?accountDeleted=true", url),
         );
