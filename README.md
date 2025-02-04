@@ -1,8 +1,8 @@
-# Spectra Self-Auth
+# Spectra
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Simon-Fontaine/spectra-self-auth?tab=MIT-1-ov-file)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Simon-Fontaine/spectra?tab=MIT-1-ov-file)
 
-**Spectra Self-Auth** is a **Next.js 15+** application designed primarily for Overwatch 2 e-sport **team management**—including rosters, schedules, and admin tooling—while showcasing a robust, **reusable** custom authentication system. Its modular auth logic (featuring sessions, CSRF tokens, email verification, and rate-limiting) can be easily **ported** or **adapted** into other Next.js projects.
+**Spectra** is a **Next.js 15+** application designed primarily for Overwatch 2 e-sport **team management**—including rosters, schedules, and admin tooling—while showcasing a robust, **reusable** custom authentication system. Its modular auth logic (featuring sessions, CSRF tokens, email verification, and rate-limiting) can be easily **ported** or **adapted** into other Next.js projects.
 
 ---
 
@@ -31,7 +31,7 @@
 
 ## Overview
 
-**Spectra Self-Auth** is a Next.js website that manages an Overwatch 2 e-sport team—from rosters to user roles and schedules—backed by a **bespoke, self-contained auth** system. While the site itself is dedicated to Overwatch 2 management, the **authentication** logic (short-lived sessions, email verification, etc.) is **modular** enough for you to lift and integrate into your own Next.js applications.
+**Spectra** is a Next.js website that manages an Overwatch 2 e-sport team—from rosters to user roles and schedules—backed by a **bespoke, self-contained auth** system. While the site itself is dedicated to Overwatch 2 management, the **authentication** logic (short-lived sessions, email verification, etc.) is **modular** enough for you to lift and integrate into your own Next.js applications.
 
 **Key Highlights**:
 
@@ -87,7 +87,7 @@
 Here's a quick look at the repo:
 
 ```bash
-spectra-self-auth/
+spectra/
 ├── app/                    # Next.js App Router 
 │   ├── (auth)/             # Auth pages (sign-in, sign-up, reset password, etc.)
 │   ├── (home)/             # Public pages (news, roster, etc.)
@@ -120,13 +120,13 @@ spectra-self-auth/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Simon-Fontaine/spectra-self-auth.git
+git clone https://github.com/Simon-Fontaine/spectra.git
 ```
 
 ### 2. Install Dependencies
 
 ```bash
-cd spectra-self-auth
+cd spectra
 npm install --legacy-peer-deps
 # or yarn install / pnpm install
 ```
@@ -229,13 +229,13 @@ Contributions are welcome! Please:
 3. **Make changes** and commit.  
 4. **Open a PR** to merge into `main`.
 
-Thank you for helping improve **Spectra Self-Auth**!
+Thank you for helping improve **Spectra**!
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/Simon-Fontaine/spectra-self-auth?tab=MIT-1-ov-file). Feel free to modify or adapt for commercial and personal use.
+This project is licensed under the [MIT License](https://github.com/Simon-Fontaine/spectra?tab=MIT-1-ov-file). Feel free to modify or adapt for commercial and personal use.
 
 ---
 
@@ -249,4 +249,4 @@ This project is licensed under the [MIT License](https://github.com/Simon-Fontai
 
 ---
 
-Enjoy your **Overwatch 2** team management site with fully customizable authentication! If you run into any issues, feel free to open an [issue](https://github.com/Simon-Fontaine/spectra-self-auth/issues) or discussion.
+Enjoy your **Overwatch 2** team management site with fully customizable authentication! If you run into any issues, feel free to open an [issue](https://github.com/Simon-Fontaine/spectra/issues) or discussion.

@@ -13,7 +13,7 @@
     "@better-fetch/fetch": "^1.1.12",
     "@hookform/resolvers": "^3.10.0",
     "@maxmind/geoip2-node": "^5.0.0",
-    "@prisma/client": "^6.3.0",
+    "@prisma/client": "^6.3.1",
     "@prisma/extension-accelerate": "^1.2.1",
     "@prisma/extension-pulse": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.5",
@@ -50,7 +50,7 @@
     "next-themes": "^0.4.4",
     "nextjs-toploader": "^3.7.15",
     "nuqs": "^2.3.1",
-    "prisma": "^6.3.0",
+    "prisma": "^6.3.1",
     "react": "^19.0.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^19.0.0",
@@ -71,6 +71,7 @@
     "@types/react-dom": "^19",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vercel": "^41.0.0"
   }
 }
