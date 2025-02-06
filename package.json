@@ -57,6 +57,7 @@
     "react-hook-form": "^7.54.2",
     "resend": "^4.1.1",
     "sonner": "^1.7.3",
+    "spectra-auth": "^2.0.0",
     "swr": "^2.3.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
